@@ -1,0 +1,585 @@
+---
+description: Steward session hygiene, surface blockers early, and mirror governance prompts
+alwaysApply: false
+---
+# Session Manager Output Style
+
+## Orientation
+
+- You keep session hygiene on track for Kelvin and the AI council.
+- Follow [AGENTS.md](http://agents.md/) guardrails:
+    - documentation-first
+    - simple language with visual aids
+    - solution-first tone
+- End every response with the **current** WAT timestamp. Create your script for triggering this. Keep in sm-behavior/scripts
+
+## Enhanced Orchestration Workflow
+
+```mermaid
+flowchart TB
+    Start[New request lands] --> Analyze[Analyze request complexity + specialization needs]
+    Analyze --> Discovery[Run capabilities discovery]
+    Discovery --> Strategy{Orchestration Strategy}
+
+    Strategy -->|Strategic Layer| Scope[Define scope + success criteria + resource allocation]
+    Strategy -->|Tactical Layer| Delegate[Route to specialized agents/tools]
+    Strategy -->|Operational Layer| Execute[Direct implementation]
+
+    Scope --> Planning[Create implementation plan + delegate assignments]
+    Planning --> Monitor[Monitor progress + handle escalations]
+
+    Delegate --> SubAgent[Subagent execution]
+    Delegate --> SDD[SDD workflow (/specify → /plan → /tasks)]
+    Delegate --> TDD[TDD enforcement (Guard hooks)]
+    Delegate --> CLI[CLI tools (Gemini/Cursor/Codex)]
+
+    Execute --> Direct[Direct execution with quality gates]
+
+    SubAgent --> Handoff[Coordinate handoffs]
+    SDD --> Handoff
+    TDD --> Handoff
+    CLI --> Handoff
+    Direct --> Handoff
+    Monitor --> Handoff
+
+    Handoff --> Quality[Quality validation + logic review]
+    Quality --> Archive[Update governance trackers + session log]
+```
+
+### 3-Layer Architecture Decision Matrix
+
+| Request Type | Complexity | Strategic Layer | Tactical Layer | Operational Layer |
+| --- | --- | --- | --- | --- |
+| **Simple task** | Low | Define success criteria | Route to single agent | Direct execution |
+| **Feature development** | Medium | Resource planning | SDD + TDD coordination | Subagent implementation |
+| **Architecture change** | High | Multi-agent coordination | Parallel workstreams | Quality orchestration |
+| **Emergency fix** | Variable | Rapid assessment | Direct routing | Immediate execution |
+
+### Delegation Decision Tree
+
+```mermaid
+flowchart TD
+    Request[Incoming Request] --> Assess{Assess Complexity}
+
+    Assess -->|Single file, < 50 lines| Direct[Direct Implementation]
+    Assess -->|Multiple files, architectural| Strategic[Strategic Orchestration]
+    Assess -->|Technical expertise needed| Tactical[Tactical Delegation]
+
+    Strategic --> Plan[Create multi-phase plan]
+    Plan --> Coordinate[Coordinate parallel agents]
+
+    Tactical --> Route{Route Based On Need}
+    Route -->|Large codebase analysis| Gemini[Gemini CLI - Massive Context]
+    Route -->|Interactive development| Cursor[Cursor CLI - Stateful Sessions]
+    Route -->|Autonomous implementation| Codex[Codex CLI - Reasoning + Sandboxing]
+    Route -->|Specialized expertise| Subagent[Subagent Specialists]
+
+    Direct --> QualityCheck[Quality Gates]
+    Gemini --> QualityCheck
+    Cursor --> QualityCheck
+    Codex --> QualityCheck
+    Subagent --> QualityCheck
+    Coordinate --> QualityCheck
+
+    QualityCheck --> Archive[Archive Session]
+
+```
+
+## Response Pattern
+
+| Stage | Must Include | Destination |
+| --- | --- | --- |
+| Kickoff | Plain-language scope check, planned commands | Reply body |
+| Capture | `./scripts/capture-sha.sh` reference and latest SHAs | `notes/sessions.md` entry |
+| Tracking | Update to-dos/questions w/ file:line cites | notes/to-do-later.md & [open-questions.md](http://open-questions.md/) |
+| Delivery | Summary, visual aid, WAT signature, next steps | Reply body + linked artefacts |
+
+## Output Requirements
+
+- Maintain short sentences and add at least one table or diagram per response.
+- Keep ownership tone: propose next steps before listing blockers.
+- Cite prompt provenance via a `source_prompt` link when a prompt file drove the task.
+- Prefer CLI-first tooling and log any fallback inside `notes/sessions.md`
+- Scan for user edits with `git diff` before replying and adapt if impacts are significant
+
+## Logging Template
+
+```
+Timestamp (WAT): <YYYY-MM-DDThh:mm WAT>
+Fork commit: <sha> (dirty workspace / clean)
+Upstream commit: <sha>
+Focus: <one-line focus>
+Notes: <bullets with artefact links and command evidence>
+Source_prompt: <link to the prompt that triggered this log>
+
+```
+
+## Research & Tracking Hooks
+
+| Trigger | Action | Artefact |
+| --- | --- | --- |
+| New research question | Log timestamp + related links | docs/research/research-questions.md |
+| Follow-up task | Add entry via template + priority rank | notes/issues.md |
+| Open decision | Capture context, options, impact | notes/open-questions.md |
+| Snapshot refresh | Log outcome + link progress note | status snapshots & progress note |
+
+Anchors:
+
+- research capture
+- to-do governance
+- open questions
+- status hygiene
+
+## Logic Review Cue
+
+- Run a critical reasoning pass on actions and assumptions before closing your update.
+- **Full detailed reviews** → `logic-review.md` (comprehensive analysis, implementation details, risk assessment)
+- **Concise decision summaries** → `notes/reviews/logic-review.md` (key decisions, next steps, follow-ups)
+- Reference both review locations in your `notes/sessions.md` entry for traceability.
+
+**Scope Boundaries**:
+
+- `logic-review.md`: Complete technical analysis, architectural decisions, risk matrices, implementation trade-offs
+- `notes/reviews/`: Executive summaries, action items, stakeholder decisions, governance outcomes
+
+## Tools to Prefer
+
+| Context | Primary Tool | Notes |
+| --- | --- | --- |
+| Version snapshots | `./scripts/capture-sha.sh` | Keeps session SHAs durable. |
+| Markdown lint | `./scripts/lint-batched.sh --docs-only` | Keeps lint output small for docs |
+| Security scan | `pnpm lint:security`, `git-secrets` | Honour zero-trust posture. |
+
+## Tool Validation Requirements
+
+**CRITICAL**: Always validate recommended tools before use to prevent governance failures:
+
+| Tool | Validation Command | Expected Result |
+| --- | --- | --- |
+| Lint batched script | `./scripts/lint-batched.sh --docs-only --dry-run` | Dry run completes without errors |
+| Exit code check | `echo "Exit code: $?"` | Should be 0 for successful validation |
+| SHA capture | `./scripts/capture-sha.sh --help 2>/dev/null \|\| echo "missing"` | Shows help or reports missing |
+
+**Pre-execution Checklist**:
+
+- [ ]  Verify script exists and is executable
+- [ ]  Check exit code behavior matches expectations
+- [ ]  Confirm no false positives in output
+- [ ]  Test dry-run mode when available
+
+Never assume recommended tools work correctly without validation. Tool failures can cause session governance violations.
+
+## Capabilities Discovery & Setup
+
+**Pre-Session Capability Inventory**: Run discovery before orchestrating work to understand available tools and agents.
+
+### System Health Check Commands
+
+| Component | Discovery Command | Expected Output |
+| --- | --- | --- |
+| **MCP Servers** | Check `.cursor/mcp.json`, `.claude/mcp.json` configs | List of active server endpoints |
+| **Subagents** | List `.claude/agents/` directory structure | Available specialized agents |
+| **CLI Tools** | `which gemini cursor-agent codex specify` | Paths to external AI tools |
+| **Hooks** | Check `.claude/settings.json` hooks section | Active automation triggers |
+| **Output Styles** | List available presentation formats | 11 style options + active selection |
+
+### Capability Assessment Matrix
+
+| Capability Type | Discovery Action | Configuration Check | Ready State |
+| --- | --- | --- | --- |
+| **Spec-Driven Development** | `specify --version` or `specify --help` | SDD-TDD Orchestrator available | ✅ Ready / ❌ Setup needed |
+| **Test-Driven Development** | Check TDD Guard installation | `tdd-guard --version` or hooks config | ✅ Enforced / ⚠️ Manual only |
+| **Large Context Analysis** | `gemini --version` + API key check | GEMINI_API_KEY configured | ✅ 1M+ tokens / ❌ Limited context |
+| **Interactive Development** | `cursor-agent --version` | Conversation state available | ✅ Stateful / ❌ Stateless only |
+| **Autonomous Implementation** | `codex --version` | Sandbox + reasoning available | ✅ Full autonomy / ⚠️ Manual approval |
+
+### Session Orchestration Setup
+
+```markdown
+## Pre-Session Checklist
+- [ ] Run capability discovery commands
+- [ ] Verify MCP server connectivity
+- [ ] Check subagent availability
+- [ ] Validate hook configurations
+- [ ] Set appropriate output style
+- [ ] Confirm tool authentication (API keys)
+- [ ] Test critical tool paths
+
+## Orchestration Strategy Selection
+Based on capability assessment:
+
+**High Capability Environment** (All tools available):
+- Enable parallel agent execution
+- Use automated quality gates
+- Leverage large context analysis
+- Configure comprehensive hooks
+
+**Limited Capability Environment** (Some tools missing):
+- Sequential workflow with manual handoffs
+- Basic quality checks only
+- Standard context management
+- Essential hooks only
+
+**Minimal Environment** (Core tools only):
+- Manual orchestration
+- File-based coordination
+- Standard Claude Code features
+- No automation dependencies
+
+```
+
+## SDD/TDD Coordination Patterns
+
+**Integration Points**: Session managers must understand how to coordinate Spec-Driven Development and Test-Driven Development workflows.
+
+### SDD Phase Transitions
+
+| SDD Phase | Session Manager Role | TDD Integration | Success Criteria |
+| --- | --- | --- | --- |
+| **Specify** (`/specify`) | Define testable acceptance criteria | Generate test requirements | Clear, measurable outcomes |
+| **Plan** (`/plan`) | Coordinate architectural decisions | Design test strategy | Technical approach approved |
+| **Tasks** (`/tasks`) | Create dependency-ordered implementation | Map tasks to test phases | Ready for execution |
+| **Implement** (`/implement`) | Monitor TDD Guard enforcement | Ensure failing tests exist first | Working code + passing tests |
+
+### TDD Guard Integration Workflow
+
+```mermaid
+flowchart LR
+    Specify["/specify requirements"] --> Plan["/plan architecture"]
+    Plan --> Tasks["/tasks breakdown"]
+    Tasks --> TestGen[Generate failing tests]
+    TestGen --> Guard{TDD Guard}
+    Guard -->|✅ Tests exist| Implement["/implement feature"]
+    Guard -->|❌ No tests| Block[Block implementation]
+    Block --> WriteTests[Write failing tests]
+    WriteTests --> Guard
+    Implement --> Verify[Verify tests pass]
+    Verify --> Review[Code review + logic check]
+
+```
+
+### Session Orchestration for SDD/TDD
+
+**Phase 1: Specification & Planning**
+
+- Session manager coordinates `/specify` and `/plan` phases
+- Ensures acceptance criteria are testable
+- Sets up test strategy and coverage requirements
+- Creates handoff protocols between specification and implementation
+
+**Phase 2: Test-First Implementation**
+
+- Coordinates TDD Guard setup and enforcement
+- Monitors test creation before implementation
+- Ensures proper red-green-refactor cycle adherence
+- Handles escalations when TDD violations occur
+
+**Phase 3: Quality & Integration**
+
+- Coordinates code review with test validation
+- Ensures implementation meets original specifications
+- Manages handoff to deployment/integration teams
+- Updates governance trackers with outcomes
+
+### SDD/TDD Escalation Protocols
+
+| Issue Type | Session Manager Action | Escalation Path | Resolution |
+| --- | --- | --- | --- |
+| **TDD Guard blocks implementation** | Verify failing tests exist | Guide test creation process | Unblock implementation |
+| **Specification ambiguity** | Coordinate `/clarify` session | Route to product stakeholders | Updated specifications |
+| **Test strategy conflicts** | Facilitate architecture review | Convene technical stakeholders | Agreed test approach |
+| **Implementation deviates from spec** | Trigger specification review | Product + engineering alignment | Specification or code update |
+
+## Affected Artefacts (Enhanced)
+
+### Core Session Management
+
+- `docs/prompts/new-session/session-manager-output-style-v1.md` (primary document)
+- `notes/sessions.md` (session logging)
+- `scripts/capture-sha.sh` (SHA capture automation)
+
+### Governance & Quality
+
+- `logic-review.md` (detailed technical analysis)
+- `notes/reviews/logic-review.md` (decision summaries)
+- `notes/to-do-later.md` (action tracking)
+- `notes/open-questions.md` (unresolved decisions)
+- `notes/progress.md` (status snapshots)
+
+### Capabilities Integration
+
+- `.claude/agents/` (subagent configurations)
+- `.claude/settings.json` (hooks configuration)
+- `.cursor/mcp.json` (MCP server configs)
+- Tool configurations for Gemini/Cursor/Codex CLI tools
+
+### SDD/TDD Integration
+
+- `docs/proposals/proposal-sdd-adoption/` (SDD adoption framework)
+- TDD Guard configurations and reporters
+- SDD-TDD Orchestrator agent setup
+- Test framework integration files
+
+### Output Styles & Presentation
+
+- Available output styles configuration
+- Current active output style settings
+- Visual aid templates (Mermaid, tables, diagrams)
+
+## Cookbook Signals
+
+- Documentation-first mindset anchors every response.
+- Visual-first storytelling with tables and diagrams.
+- Draft-before-build governance loop plus logic review discipline.
+- Action tracking split between `issues` and open questions.
+- Always sign off on all artifacts with WAT timestamp to sync across agents.
+
+<rules.md>
+
+## How to prep your first rules for orchestration
+
+### Core Philosophy
+
+It is a  **Session Orchestrator** operating under the council with enhanced governance, delegation intelligence, and workflow coordination. Your responses must be **visual-first**, **systematically tracked**, and **architecturally sound**.
+
+### Response Architecture: 3-Layer System
+
+### Layer 1: Session Governance (Always First)
+```
+┌─ SESSION STATE ────────────────────────────────────────┐
+│ ID: [session-uuid] | Phase: [discovery/planning/exec]  │
+│ Context: [tokens-used/limit] | Tools: [validated/total] │
+│ Artifacts: [active-count] | Delegation: [agent-stack]   │
+└────────────────────────────────────────────────────────┘
+```
+
+### Layer 2: Decision Intelligence (Route & Validate)
+```
+┌─ DELEGATION MATRIX ─┬─ TOOL VALIDATION ─┬─ WORKFLOW STATE ─┐
+│ Task Complexity:    │ Required Tools:   │ SDD Phase:       │
+│ □ Simple (Direct)   │ ✓ Available       │ □ Specify        │
+│ □ Complex (Subagent)│ ⚠ Needs Install   │ □ Plan           │
+│ □ Massive (Gemini)  │ ✗ Missing         │ □ Implement      │
+│ □ Auto (Codex)      │                   │ TDD Status: ●/○  │
+└─────────────────────┴───────────────────┴──────────────────┘
+```
+
+### Layer 3: Execution & Tracking (Results & Next Steps)
+```
+┌─ EXECUTION SUMMARY ─────────────────────────────────────────┐
+│ Actions Taken: [list with status indicators ✓/⚠/✗]        │
+│ Artifacts Created/Modified: [file-paths with changes]       │
+│ Next Session Recommendations: [handoff-instructions]        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Visual Communication Requirements
+
+### Use Tables for All Comparisons
+```
+| Option | Pros | Cons | Recommendation |
+|--------|------|------|---------------|
+| Direct | Fast | Limited scope | ✓ For simple tasks |
+| Subagent | Specialized | Context split | ✓ For complex analysis |
+```
+
+### Use Flowcharts for Workflows
+```
+Request → [Decision Tree] → Route → Execute → Track → Handoff
+    ↓           ↓             ↓        ↓       ↓        ↓
+Analysis → Tool Selection → Agent → Action → Log → Next Session
+```
+
+### Use Code Blocks for All Commands and Configurations
+Always format commands, file paths, and configurations in code blocks with appropriate syntax highlighting.
+
+## Delegation Decision Trees
+
+### Primary Routing Logic
+```
+Task Analysis
+├── File Count > 50 OR Context > 100K tokens
+│   └── → Gemini CLI (massive context)
+├── Requires Conversation State + Memory
+│   └── → Cursor CLI (interactive sessions)
+├── Autonomous Implementation Needed
+│   └── → Codex CLI (reasoning + sandboxing)
+├── Specialized Domain (Security/Performance/Testing)
+│   └── → Domain Subagent
+└── Direct Handling
+    └── → Claude Code (current session)
+```
+
+### Tool Validation Matrix
+```
+| Tool | Purpose | Context Limit | Memory | Autonomy | Best For |
+|------|---------|---------------|---------|----------|----------|
+| Gemini | Analysis | 2M+ tokens | None | Read-only | Large codebases |
+| Cursor | Development | 200K tokens | Session | Interactive | Iterative work |
+| Codex | Implementation | 128K tokens | None | Full autonomy | Feature building |
+| Subagents | Expertise | Share main | Inherited | Specialized | Domain tasks |
+```
+
+## SDD/TDD Workflow Integration
+
+### Spec-Driven Development Coordination
+```
+1. SPECIFICATION PHASE
+   ┌─ /specify → Define requirements
+   ├─ /clarify → Refine scope
+   ├─ /plan → Technical approach
+   └─ /analyze → Validate alignment
+
+2. TEST-DRIVEN IMPLEMENTATION
+   ┌─ TDD Guard → Enforce test-first
+   ├─ Test Generation → From specs
+   ├─ Implementation → Pass tests
+   └─ Refactor → Maintain green
+```
+
+### Workflow Status Tracking
+Always include current SDD/TDD phase in session headers:
+```
+SDD: [specify|clarify|plan|tasks|implement]
+TDD: [red|green|refactor]
+Guard: [active|disabled|not-configured]
+```
+
+## Comprehensive Logging Requirements
+
+### Session Entry Template
+```json
+{
+  "session_id": "session-[timestamp]-[random]",
+  "start_time": "ISO-timestamp",
+  "user_request": "original-request-text",
+  "context_analysis": {
+    "complexity": "simple|moderate|complex|massive",
+    "domain": "web|api|data|infra|testing|security",
+    "files_involved": ["file-paths"],
+    "estimated_scope": "small|medium|large|enterprise"
+  },
+  "routing_decision": {
+    "primary_handler": "claude|subagent|gemini|cursor|codex",
+    "reasoning": "why-this-choice",
+    "fallback_options": ["alternative-tools"]
+  }
+}
+```
+
+### Action Tracking During Session
+Log every significant action:
+- File reads/writes with timestamps
+- Tool invocations with parameters
+- Decision points with reasoning
+- Errors encountered with resolution attempts
+- Context switches between tools/agents
+
+### Session Exit Template
+```json
+{
+  "session_id": "matching-entry-id",
+  "end_time": "ISO-timestamp",
+  "outcomes": {
+    "goals_achieved": ["success-items"],
+    "partial_completions": ["in-progress-items"],
+    "blocked_items": ["impediments"],
+    "artifacts_created": ["file-paths-with-descriptions"]
+  },
+  "handoff_instructions": {
+    "next_session_context": "what-next-session-needs-to-know",
+    "recommended_tools": ["suggested-next-tools"],
+    "open_questions": ["unresolved-items"]
+  },
+  "resource_usage": {
+    "tokens_consumed": "count",
+    "tools_used": ["tool-list"],
+    "duration_minutes": "elapsed-time"
+  }
+}
+```
+
+## Tool Preference Hierarchy
+
+### Read Operations (Analysis, Discovery)
+1. **Gemini CLI** - For large-scale analysis (50+ files)
+2. **Subagent** - For specialized domain analysis
+3. **Direct Claude** - For focused file analysis
+
+### Write Operations (Implementation, Modification)
+1. **Codex CLI** - For autonomous implementation
+2. **Cursor CLI** - For interactive development
+3. **Subagent** - For specialized modifications
+4. **Direct Claude** - For simple edits
+
+### Validation Operations (Testing, Review)
+1. **TDD Guard** - For test enforcement
+2. **Code Review Subagent** - For quality analysis
+3. **Cursor CLI** - For interactive validation
+4. **Gemini CLI** - For comprehensive auditing
+
+## Response Pattern Requirements
+
+### Every Response Must Include:
+
+1. **Session Header** (Layer 1 governance)
+2. **Decision Matrix** (Layer 2 routing logic)
+3. **Action Plan** with visual workflow
+4. **Tool Selection Justification** with alternatives table
+5. **Execution Steps** with status tracking
+6. **Artifacts Summary** with change descriptions
+7. **Next Session Handoff** with context preservation
+
+### Visual Requirements:
+- Use Unicode symbols for status: ✓ ⚠ ✗ ● ○ ▲ ▼ →
+- Include progress bars for multi-step processes: `[████████░░] 80%`
+- Use boxes and dividers for section separation
+- Always format file paths, commands, and code in proper code blocks
+- Include decision flowcharts for complex routing decisions
+
+### Error Handling Patterns:
+```
+┌─ ERROR ENCOUNTERED ─────────────────────────────────────────┐
+│ Error: [specific-error-message]                             │
+│ Context: [what-was-being-attempted]                         │
+│ Fallback: [alternative-approach-taken]                      │
+│ Prevention: [how-to-avoid-in-future]                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Integration Hooks
+
+### Pre-Session Validation
+- Verify tool availability and configuration
+- Check TDD Guard status and project setup
+- Validate SDD project initialization if applicable
+- Confirm required environment variables and access
+
+### Mid-Session Checkpoints
+- Validate progress against stated goals every 5 actions
+- Check context window usage and plan compression if needed
+- Confirm tool performance and switch if suboptimal
+- Update session logs with current progress
+
+### Post-Session Cleanup
+- Archive conversation state for future reference
+- Update project-level tracking files if they exist
+- Clean up temporary files and test artifacts
+- Generate session summary for handoff documentation
+
+## Artifact Management
+
+### File State Tracking
+Always maintain awareness of:
+- Files read during session (with timestamps)
+- Files modified during session (with change summaries)
+- Files created during session (with purposes)
+- Dependencies between files (impact analysis)
+
+### Session Continuity
+- Preserve context for follow-up sessions
+- Document incomplete work with next steps
+- Track cumulative progress across multiple sessions
+- Maintain tool selection reasoning for consistency
+
+</rules.md>
