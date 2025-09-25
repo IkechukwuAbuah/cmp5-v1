@@ -1,97 +1,63 @@
-#!/usr/bin/env bash
+#!/bin/bash
+
+# Create new feature branch and spec file from natural language description
+# Usage: ./create-new-feature.sh --json "Feature description"
 
 set -e
 
-JSON_MODE=false
-ARGS=()
-for arg in "$@"; do
-    case "$arg" in
-        --json) JSON_MODE=true ;;
-        --help|-h) echo "Usage: $0 [--json] <feature_description>"; exit 0 ;;
-        *) ARGS+=("$arg") ;;
-    esac
-done
+# Check if --json flag is provided
+if [[ "$1" == "--json" ]]; then
+    JSON_OUTPUT=true
+    FEATURE_DESC="$2"
+else
+    JSON_OUTPUT=false
+    FEATURE_DESC="$1"
+fi
 
-FEATURE_DESCRIPTION="${ARGS[*]}"
-if [ -z "$FEATURE_DESCRIPTION" ]; then
-    echo "Usage: $0 [--json] <feature_description>" >&2
+if [[ -z "$FEATURE_DESC" ]]; then
+    echo "Error: Feature description is required" >&2
     exit 1
 fi
 
-# Function to find the repository root by searching for existing project markers
-find_repo_root() {
-    local dir="$1"
-    while [ "$dir" != "/" ]; do
-        if [ -d "$dir/.git" ] || [ -d "$dir/.specify" ]; then
-            echo "$dir"
-            return 0
-        fi
-        dir="$(dirname "$dir")"
-    done
-    return 1
-}
+# Generate branch name from feature description
+# Convert to lowercase, replace spaces with hyphens, remove special characters
+BRANCH_NAME=$(echo "$FEATURE_DESC" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9 -]//g' | sed 's/ /-/g' | cut -c1-50)
 
-# Resolve repository root. Prefer git information when available, but fall back
-# to searching for repository markers so the workflow still functions in repositories that
-# were initialised with --no-git.
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-if git rev-parse --show-toplevel >/dev/null 2>&1; then
-    REPO_ROOT=$(git rev-parse --show-toplevel)
-    HAS_GIT=true
-else
-    REPO_ROOT="$(find_repo_root "$SCRIPT_DIR")"
-    if [ -z "$REPO_ROOT" ]; then
-        echo "Error: Could not determine repository root. Please run this script from within the repository." >&2
-        exit 1
-    fi
-    HAS_GIT=false
+# Ensure branch name is not empty and add feature prefix
+if [[ -z "$BRANCH_NAME" ]]; then
+    BRANCH_NAME="feature-spec"
 fi
+BRANCH_NAME="feature/$(date +%Y%m%d)-${BRANCH_NAME}"
 
-cd "$REPO_ROOT"
+# Generate spec file path
+SPEC_DIR="specs"
+SPEC_FILE="${SPEC_DIR}/$(date +%Y%m%d)-$(echo "$BRANCH_NAME" | sed 's|feature/||' | sed 's/[^a-z0-9-]//g').md"
 
-SPECS_DIR="$REPO_ROOT/specs"
-mkdir -p "$SPECS_DIR"
+# Create specs directory if it doesn't exist
+mkdir -p "$SPEC_DIR"
 
-HIGHEST=0
-if [ -d "$SPECS_DIR" ]; then
-    for dir in "$SPECS_DIR"/*; do
-        [ -d "$dir" ] || continue
-        dirname=$(basename "$dir")
-        number=$(echo "$dirname" | grep -o '^[0-9]\+' || echo "0")
-        number=$((10#$number))
-        if [ "$number" -gt "$HIGHEST" ]; then HIGHEST=$number; fi
-    done
-fi
-
-NEXT=$((HIGHEST + 1))
-FEATURE_NUM=$(printf "%03d" "$NEXT")
-
-BRANCH_NAME=$(echo "$FEATURE_DESCRIPTION" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | sed 's/^-//' | sed 's/-$//')
-WORDS=$(echo "$BRANCH_NAME" | tr '-' '\n' | grep -v '^$' | head -3 | tr '\n' '-' | sed 's/-$//')
-BRANCH_NAME="${FEATURE_NUM}-${WORDS}"
-
-if [ "$HAS_GIT" = true ]; then
+# Check if we're in a git repository
+if git rev-parse --git-dir > /dev/null 2>&1; then
+    # Create and checkout new branch
     git checkout -b "$BRANCH_NAME"
+
+    # Initialize spec file
+    touch "$SPEC_FILE"
+    git add "$SPEC_FILE"
 else
-    >&2 echo "[specify] Warning: Git repository not detected; skipped branch creation for $BRANCH_NAME"
+    echo "Warning: Not in a git repository, skipping branch creation" >&2
 fi
 
-FEATURE_DIR="$SPECS_DIR/$BRANCH_NAME"
-mkdir -p "$FEATURE_DIR"
-
-TEMPLATE="$REPO_ROOT/.specify/templates/spec-template.md"
-SPEC_FILE="$FEATURE_DIR/spec.md"
-if [ -f "$TEMPLATE" ]; then cp "$TEMPLATE" "$SPEC_FILE"; else touch "$SPEC_FILE"; fi
-
-# Set the SPECIFY_FEATURE environment variable for the current session
-export SPECIFY_FEATURE="$BRANCH_NAME"
-
-if $JSON_MODE; then
-    printf '{"BRANCH_NAME":"%s","SPEC_FILE":"%s","FEATURE_NUM":"%s"}\n' "$BRANCH_NAME" "$SPEC_FILE" "$FEATURE_NUM"
-else
-    echo "BRANCH_NAME: $BRANCH_NAME"
-    echo "SPEC_FILE: $SPEC_FILE"
-    echo "FEATURE_NUM: $FEATURE_NUM"
-    echo "SPECIFY_FEATURE environment variable set to: $BRANCH_NAME"
+# Output JSON if requested
+if [[ "$JSON_OUTPUT" == "true" ]]; then
+    cat << EOF
+{
+    "BRANCH_NAME": "$BRANCH_NAME",
+    "SPEC_FILE": "$SPEC_FILE",
+    "FEATURE_DESC": "$FEATURE_DESC"
+}
+EOF
 fi
+
+echo "Created feature branch: $BRANCH_NAME" >&2
+echo "Spec file: $SPEC_FILE" >&2

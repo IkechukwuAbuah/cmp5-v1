@@ -14,7 +14,35 @@ This project uses **The SMD** output style, configured in `.claude/settings.loca
 - 3-layer response architecture (Session Governance, Decision Intelligence, Execution & Tracking)
 - WAT (West Africa Time) timestamp signatures
 
-## Key Project Components
+## Current Feature Context: EFL Agent Assistant Track & Trace
+
+### Technical Stack (Current Feature)
+**Language/Version**: Python 3.11
+**Primary Dependencies**: FastAPI, OpenAI Agents SDK, OpenAI Realtime API, Twilio telephony integration
+**Storage**: Redis for session management and caching
+**Testing**: pytest, contract tests, integration tests
+**Target Platform**: Linux server with vertical scaling
+**Project Type**: Web application (React/TypeScript frontend + FastAPI/Python backend)
+
+**Key Requirements**:
+- Response latency ≤ 5 seconds for chat and voice
+- Voice responses limited to 20 seconds maximum
+- Support for 100 concurrent users, 10K containers/day
+- Integration with EFL Terminal and CMA CGM APIs
+- Multi-channel support (voice + chat) with session continuity
+
+**Architecture Patterns**:
+- Multi-agent system with specialized agents for different functions
+- MCP (Model Context Protocol) servers for external API integration
+- Circuit breakers and graceful degradation for reliability
+- Test-driven development with comprehensive test coverage (minimum 80%)
+
+### Integration Requirements
+- **EFL Terminal API**: Container status and location data
+- **CMA CGM API**: Global shipping events and vessel tracking
+- **OpenAI Realtime API**: Voice processing and LLM orchestration
+- **Twilio**: Telephony integration for voice channel
+- **Redis**: Session management and response caching
 
 ### Session Logging System
 - **Location**: `logs/status_line.json`
@@ -111,7 +139,7 @@ The project supports Spec-Driven Development and Test-Driven Development workflo
 ```
 
 ### Key Metrics Tracked
-- Total cost in USD
+- Total cost in Naira
 - API duration in milliseconds
 - Lines added/removed
 - Token usage status
