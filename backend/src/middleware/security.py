@@ -1,0 +1,25 @@
+"""Security middleware for authentication and authorization."""
+
+import time
+from typing import Callable
+
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+
+
+class SecurityMiddleware(BaseHTTPMiddleware):
+    """Middleware for security headers and basic protection."""
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        """Process request with security headers."""
+        response = await call_next(request)
+
+        # Add security headers
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+
+        return response

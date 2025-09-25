@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "efl-agent-assistant"
+version = "1.0.0"
+description = "EFL Agent Assistant for Container Tracking with Voice and Chat Support"
+authors = [
+    {name = "EFL Team", email = "dev@efl.com"}
+]
+dependencies = [
+    "fastapi==0.104.1",
+    "uvicorn[standard]==0.24.0",
+    "pydantic==2.5.0",
+    "sqlalchemy==2.0.23",
+    "redis==5.0.1",
+    "httpx==0.25.2",
+    "python-jose[cryptography]==3.3.0",
+    "passlib[bcrypt]==1.7.4",
+    "python-multipart==0.0.6",
+    "aiofiles==23.2.1",
+    "openai==1.3.9",
+    "twilio==8.10.0",
+    "pydantic-settings==2.1.0",
+    "slowapi==0.1.9",
+    "circuitbreaker==1.4.0",
+    # "mcp==0.1.0"  # Removed - package not available
+]
+
+[project.optional-dependencies]
+dev = [
+    "black==23.11.0",
+    "isort==5.12.0",
+    "flake8==6.1.0",
+    "pytest==7.4.3",
+    "pytest-asyncio==0.21.1",
+    "pytest-cov==4.1.0"
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--cov-fail-under=80"
+]
