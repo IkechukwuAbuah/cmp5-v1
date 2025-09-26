@@ -8,7 +8,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 
-from src.api import health, track, containers, bl, sessions, session_messages
+from src.api import health, track, containers, bl, sessions, session_messages, voice
 from src.core.config import settings
 from src.lib.circuit_breaker import CircuitBreakerManager
 from src.middleware.error_handler import ErrorHandlerMiddleware
@@ -73,6 +73,10 @@ def create_application() -> FastAPI:
     app.include_router(bl.router, prefix=settings.API_V1_STR, tags=["bill-of-lading"])
     app.include_router(sessions.router, prefix=settings.API_V1_STR, tags=["sessions"])
     app.include_router(session_messages.router, prefix=settings.API_V1_STR, tags=["session-messages"])
+
+    # Voice router (only include if voice is enabled)
+    if settings.ENABLE_VOICE:
+        app.include_router(voice.router, prefix=settings.API_V1_STR, tags=["voice"])
 
     return app
 

@@ -101,11 +101,11 @@
 - [x] T047 Graceful degradation service in backend/src/lib/graceful_degradation.py ✅
 
 ## Phase 3.6: Voice Integration
-- [ ] T048 Twilio webhook handler for voice input in backend/src/voice/twilio_handler.py
-- [ ] T049 OpenAI Realtime integration for speech processing in backend/src/voice/openai_realtime.py
-- [ ] T050 Voice response formatting service in backend/src/voice/voice_response.py
-- [ ] T051 Audio processing utilities in backend/src/voice/audio_utils.py
-- [ ] T052 Voice channel session continuity in backend/src/voice/session_continuity.py
+- [x] T048 Twilio webhook handler for voice input in backend/src/voice/twilio_handler.py ✅
+- [x] T049 OpenAI Realtime integration for speech processing in backend/src/voice/openai_realtime.py ✅
+- [x] T050 Voice response formatting service in backend/src/voice/voice_response.py ✅
+- [x] T051 Audio processing utilities in backend/src/voice/audio_utils.py ✅
+- [x] T052 Voice channel session continuity in backend/src/voice/session_continuity.py ✅
 
 ## Phase 3.6.1: Chat Integration (Multi-Channel Parity - Principle IV)
 - [ ] T052.1 [P] Chat interface service for natural language input in backend/src/chat/chat_interface.py
