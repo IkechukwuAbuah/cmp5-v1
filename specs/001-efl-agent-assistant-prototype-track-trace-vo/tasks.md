@@ -115,11 +115,11 @@
 - [x] T052.5 [P] Chat-specific error handling and user feedback in backend/src/chat/chat_errors.py ✅
 
 ## Phase 3.6.2: Localisation & Multi-Language Support (Integration Standard C6)
-- [ ] T052.6 [P] English language pack with logistics terminology in backend/src/localisation/en.py ⚠️ NOT IMPLEMENTED
-- [ ] T052.7 [P] West African English accent handling for voice recognition in backend/src/localisation/accent_handler.py ⚠️ NOT IMPLEMENTED
-- [ ] T052.8 [P] Culturally appropriate error messages for logistics domain in backend/src/localisation/cultural_messages.py ⚠️ NOT IMPLEMENTED
-- [ ] T052.9 [P] Localisation middleware for dynamic language switching in backend/src/middleware/localisation.py ⚠️ NOT IMPLEMENTED
-- [ ] T052.10 [P] Voice command grammar documentation with logistics examples in docs/voice-grammar.md ⚠️ NOT IMPLEMENTED
+- [x] T052.6 [P] English language pack with logistics terminology in backend/src/localisation/en.py ✅ IMPLEMENTED
+- [x] T052.7 [P] West African English accent handling for voice recognition in backend/src/localisation/accent_handler.py ✅ IMPLEMENTED
+- [x] T052.8 [P] Culturally appropriate error messages for logistics domain in backend/src/localisation/cultural_messages.py ✅ IMPLEMENTED
+- [x] T052.9 [P] Localisation middleware for dynamic language switching in backend/src/middleware/localisation.py ✅ IMPLEMENTED
+- [x] T052.10 [P] Voice command grammar documentation with logistics examples in docs/voice-grammar.md ✅ IMPLEMENTED
 
 ## Phase 3.7: Polish
 - [ ] T063 [P] Unit tests for container model validation in tests/unit/test_container_model.py ⚠️ NOT IMPLEMENTED
