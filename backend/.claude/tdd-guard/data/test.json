@@ -1,436 +1,91 @@
 {
   "testModules": [
     {
-      "moduleId": "tests/contract/test_bl_get.py",
+      "moduleId": "tests/unit/test_redis_session_store.py",
       "tests": [
         {
-          "name": "test_get_bl_by_number_returns_bl_data",
-          "fullName": "tests/contract/test_bl_get.py::test_get_bl_by_number_returns_bl_data",
+          "name": "test_save_session_success",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_save_session_success",
           "state": "passed"
         },
         {
-          "name": "test_get_bl_includes_associated_containers",
-          "fullName": "tests/contract/test_bl_get.py::test_get_bl_includes_associated_containers",
+          "name": "test_save_session_failure",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_save_session_failure",
           "state": "passed"
         },
         {
-          "name": "test_get_bl_includes_vessel_voyage_information",
-          "fullName": "tests/contract/test_bl_get.py::test_get_bl_includes_vessel_voyage_information",
+          "name": "test_load_session_success",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_load_session_success",
           "state": "passed"
         },
         {
-          "name": "test_get_bl_validates_bl_number_format",
-          "fullName": "tests/contract/test_bl_get.py::test_get_bl_validates_bl_number_format",
+          "name": "test_load_session_not_found",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_load_session_not_found",
           "state": "passed"
         },
         {
-          "name": "test_get_bl_handles_nonexistent_bl",
-          "fullName": "tests/contract/test_bl_get.py::test_get_bl_handles_nonexistent_bl",
+          "name": "test_load_session_failure",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_load_session_failure",
           "state": "passed"
         },
         {
-          "name": "test_get_bl_requires_authentication",
-          "fullName": "tests/contract/test_bl_get.py::test_get_bl_requires_authentication",
+          "name": "test_delete_session_success",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_delete_session_success",
           "state": "passed"
         },
         {
-          "name": "test_get_bl_validates_agent_permissions",
-          "fullName": "tests/contract/test_bl_get.py::test_get_bl_validates_agent_permissions",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/contract/test_containers_get.py",
-      "tests": [
-        {
-          "name": "test_get_container_by_id_returns_container_data",
-          "fullName": "tests/contract/test_containers_get.py::test_get_container_by_id_returns_container_data",
+          "name": "test_delete_session_not_found",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_delete_session_not_found",
           "state": "passed"
         },
         {
-          "name": "test_get_container_includes_milestones",
-          "fullName": "tests/contract/test_containers_get.py::test_get_container_includes_milestones",
+          "name": "test_session_exists_true",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_session_exists_true",
           "state": "passed"
         },
         {
-          "name": "test_get_container_includes_bill_of_lading",
-          "fullName": "tests/contract/test_containers_get.py::test_get_container_includes_bill_of_lading",
+          "name": "test_session_exists_false",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_session_exists_false",
           "state": "passed"
         },
         {
-          "name": "test_get_container_includes_terminal_location",
-          "fullName": "tests/contract/test_containers_get.py::test_get_container_includes_terminal_location",
+          "name": "test_get_session_ttl",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_get_session_ttl",
           "state": "passed"
         },
         {
-          "name": "test_get_container_requires_authentication",
-          "fullName": "tests/contract/test_containers_get.py::test_get_container_requires_authentication",
+          "name": "test_extend_session_ttl_success",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_extend_session_ttl_success",
           "state": "passed"
         },
         {
-          "name": "test_get_container_validates_agent_permissions",
-          "fullName": "tests/contract/test_containers_get.py::test_get_container_validates_agent_permissions",
+          "name": "test_cleanup_expired_sessions",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_cleanup_expired_sessions",
           "state": "passed"
         },
         {
-          "name": "test_get_container_handles_invalid_container_id",
-          "fullName": "tests/contract/test_containers_get.py::test_get_container_handles_invalid_container_id",
+          "name": "test_get_session_count",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_get_session_count",
           "state": "passed"
         },
         {
-          "name": "test_get_container_handles_container_not_found",
-          "fullName": "tests/contract/test_containers_get.py::test_get_container_handles_container_not_found",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/contract/test_health.py",
-      "tests": [
-        {
-          "name": "test_health_endpoint_returns_200_status",
-          "fullName": "tests/contract/test_health.py::test_health_endpoint_returns_200_status",
+          "name": "test_serialize_session",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_serialize_session",
           "state": "passed"
         },
         {
-          "name": "test_health_response_schema",
-          "fullName": "tests/contract/test_health.py::test_health_response_schema",
+          "name": "test_deserialize_session",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_deserialize_session",
           "state": "passed"
         },
         {
-          "name": "test_health_endpoint_response_time",
-          "fullName": "tests/contract/test_health.py::test_health_endpoint_response_time",
+          "name": "test_deserialize_session_invalid_data",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_deserialize_session_invalid_data",
           "state": "passed"
         },
         {
-          "name": "test_health_endpoint_includes_all_required_services",
-          "fullName": "tests/contract/test_health.py::test_health_endpoint_includes_all_required_services",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/contract/test_milestones_get.py",
-      "tests": [
-        {
-          "name": "test_get_container_milestones_returns_paginated_results",
-          "fullName": "tests/contract/test_milestones_get.py::test_get_container_milestones_returns_paginated_results",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_container_milestones_includes_all_milestone_fields",
-          "fullName": "tests/contract/test_milestones_get.py::test_get_container_milestones_includes_all_milestone_fields",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_container_milestones_supports_pagination_limits",
-          "fullName": "tests/contract/test_milestones_get.py::test_get_container_milestones_supports_pagination_limits",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_container_milestones_supports_offset_parameter",
-          "fullName": "tests/contract/test_milestones_get.py::test_get_container_milestones_supports_offset_parameter",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_container_milestones_returns_correct_total_count",
-          "fullName": "tests/contract/test_milestones_get.py::test_get_container_milestones_returns_correct_total_count",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_container_milestones_orders_by_timestamp",
-          "fullName": "tests/contract/test_milestones_get.py::test_get_container_milestones_orders_by_timestamp",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_container_milestones_requires_authentication",
-          "fullName": "tests/contract/test_milestones_get.py::test_get_container_milestones_requires_authentication",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_container_milestones_validates_container_access",
-          "fullName": "tests/contract/test_milestones_get.py::test_get_container_milestones_validates_container_access",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/contract/test_session_messages_get.py",
-      "tests": [
-        {
-          "name": "test_get_session_messages_returns_paginated_messages",
-          "fullName": "tests/contract/test_session_messages_get.py::test_get_session_messages_returns_paginated_messages",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_messages_includes_all_message_fields",
-          "fullName": "tests/contract/test_session_messages_get.py::test_get_session_messages_includes_all_message_fields",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_messages_orders_by_timestamp",
-          "fullName": "tests/contract/test_session_messages_get.py::test_get_session_messages_orders_by_timestamp",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_messages_respects_limit_parameter",
-          "fullName": "tests/contract/test_session_messages_get.py::test_get_session_messages_respects_limit_parameter",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_messages_handles_invalid_session_id",
-          "fullName": "tests/contract/test_session_messages_get.py::test_get_session_messages_handles_invalid_session_id",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_messages_handles_session_not_found",
-          "fullName": "tests/contract/test_session_messages_get.py::test_get_session_messages_handles_session_not_found",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_messages_requires_authentication",
-          "fullName": "tests/contract/test_session_messages_get.py::test_get_session_messages_requires_authentication",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_messages_validates_agent_permissions",
-          "fullName": "tests/contract/test_session_messages_get.py::test_get_session_messages_validates_agent_permissions",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/contract/test_sessions_get.py",
-      "tests": [
-        {
-          "name": "test_get_session_by_id_returns_session_data",
-          "fullName": "tests/contract/test_sessions_get.py::test_get_session_by_id_returns_session_data",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_includes_conversation_context",
-          "fullName": "tests/contract/test_sessions_get.py::test_get_session_includes_conversation_context",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_includes_basic_metadata",
-          "fullName": "tests/contract/test_sessions_get.py::test_get_session_includes_basic_metadata",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_handles_invalid_session_id",
-          "fullName": "tests/contract/test_sessions_get.py::test_get_session_handles_invalid_session_id",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_handles_session_not_found",
-          "fullName": "tests/contract/test_sessions_get.py::test_get_session_handles_session_not_found",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_requires_authentication",
-          "fullName": "tests/contract/test_sessions_get.py::test_get_session_requires_authentication",
-          "state": "passed"
-        },
-        {
-          "name": "test_get_session_validates_agent_permissions",
-          "fullName": "tests/contract/test_sessions_get.py::test_get_session_validates_agent_permissions",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/contract/test_track_post.py",
-      "tests": [
-        {
-          "name": "test_track_endpoint_accepts_valid_request",
-          "fullName": "tests/contract/test_track_post.py::test_track_endpoint_accepts_valid_request",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_endpoint_returns_valid_response",
-          "fullName": "tests/contract/test_track_post.py::test_track_endpoint_returns_valid_response",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_endpoint_handles_voice_channel",
-          "fullName": "tests/contract/test_track_post.py::test_track_endpoint_handles_voice_channel",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_endpoint_handles_chat_channel",
-          "fullName": "tests/contract/test_track_post.py::test_track_endpoint_handles_chat_channel",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_endpoint_requires_authentication",
-          "fullName": "tests/contract/test_track_post.py::test_track_endpoint_requires_authentication",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_endpoint_validates_agent_permissions",
-          "fullName": "tests/contract/test_track_post.py::test_track_endpoint_validates_agent_permissions",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_endpoint_handles_container_not_found",
-          "fullName": "tests/contract/test_track_post.py::test_track_endpoint_handles_container_not_found",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_endpoint_response_time_under_five_seconds",
-          "fullName": "tests/contract/test_track_post.py::test_track_endpoint_response_time_under_five_seconds",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/integration/test_bl_tracking.py",
-      "tests": [
-        {
-          "name": "test_track_bl_natural_language_query",
-          "fullName": "tests/integration/test_bl_tracking.py::TestBLTrackingIntegration::test_track_bl_natural_language_query",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_bl_returns_all_containers",
-          "fullName": "tests/integration/test_bl_tracking.py::TestBLTrackingIntegration::test_track_bl_returns_all_containers",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_bl_includes_vessel_information",
-          "fullName": "tests/integration/test_bl_tracking.py::TestBLTrackingIntegration::test_track_bl_includes_vessel_information",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_bl_handles_multiple_carriers",
-          "fullName": "tests/integration/test_bl_tracking.py::TestBLTrackingIntegration::test_track_bl_handles_multiple_carriers",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_bl_with_agent_permissions",
-          "fullName": "tests/integration/test_bl_tracking.py::TestBLTrackingIntegration::test_track_bl_with_agent_permissions",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/integration/test_container_tracking.py",
-      "tests": [
-        {
-          "name": "test_track_container_natural_language_query",
-          "fullName": "tests/integration/test_container_tracking.py::TestContainerTrackingIntegration::test_track_container_natural_language_query",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_container_with_status_response",
-          "fullName": "tests/integration/test_container_tracking.py::TestContainerTrackingIntegration::test_track_container_with_status_response",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_container_fallback_to_cma_cgm",
-          "fullName": "tests/integration/test_container_tracking.py::TestContainerTrackingIntegration::test_track_container_fallback_to_cma_cgm",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_container_with_milestone_history",
-          "fullName": "tests/integration/test_container_tracking.py::TestContainerTrackingIntegration::test_track_container_with_milestone_history",
-          "state": "passed"
-        },
-        {
-          "name": "test_track_container_with_agent_permissions",
-          "fullName": "tests/integration/test_container_tracking.py::TestContainerTrackingIntegration::test_track_container_with_agent_permissions",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/integration/test_fallback_logic.py",
-      "tests": [
-        {
-          "name": "test_circuit_breaker_activates_on_api_failure",
-          "fullName": "tests/integration/test_fallback_logic.py::TestFallbackLogicIntegration::test_circuit_breaker_activates_on_api_failure",
-          "state": "passed"
-        },
-        {
-          "name": "test_fallback_to_cached_data_when_api_unavailable",
-          "fullName": "tests/integration/test_fallback_logic.py::TestFallbackLogicIntegration::test_fallback_to_cached_data_when_api_unavailable",
-          "state": "passed"
-        },
-        {
-          "name": "test_graceful_degradation_to_basic_functionality",
-          "fullName": "tests/integration/test_fallback_logic.py::TestFallbackLogicIntegration::test_graceful_degradation_to_basic_functionality",
-          "state": "passed"
-        },
-        {
-          "name": "test_multiple_api_fallback_chain",
-          "fullName": "tests/integration/test_fallback_logic.py::TestFallbackLogicIntegration::test_multiple_api_fallback_chain",
-          "state": "passed"
-        },
-        {
-          "name": "test_circuit_breaker_auto_recovery",
-          "fullName": "tests/integration/test_fallback_logic.py::TestFallbackLogicIntegration::test_circuit_breaker_auto_recovery",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/integration/test_multi_turn.py",
-      "tests": [
-        {
-          "name": "test_conversation_context_preserved_across_turns",
-          "fullName": "tests/integration/test_multi_turn.py::TestMultiTurnConversationIntegration::test_conversation_context_preserved_across_turns",
-          "state": "passed"
-        },
-        {
-          "name": "test_session_continuity_across_channel_switch",
-          "fullName": "tests/integration/test_multi_turn.py::TestMultiTurnConversationIntegration::test_session_continuity_across_channel_switch",
-          "state": "passed"
-        },
-        {
-          "name": "test_multi_turn_clarification_handling",
-          "fullName": "tests/integration/test_multi_turn.py::TestMultiTurnConversationIntegration::test_multi_turn_clarification_handling",
-          "state": "passed"
-        },
-        {
-          "name": "test_conversation_history_persistence",
-          "fullName": "tests/integration/test_multi_turn.py::TestMultiTurnConversationIntegration::test_conversation_history_persistence",
-          "state": "passed"
-        },
-        {
-          "name": "test_multi_turn_error_recovery",
-          "fullName": "tests/integration/test_multi_turn.py::TestMultiTurnConversationIntegration::test_multi_turn_error_recovery",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/integration/test_voice_flow.py",
-      "tests": [
-        {
-          "name": "test_voice_input_speech_to_text_processing",
-          "fullName": "tests/integration/test_voice_flow.py::TestVoiceFlowIntegration::test_voice_input_speech_to_text_processing",
-          "state": "passed"
-        },
-        {
-          "name": "test_voice_response_text_to_speech_conversion",
-          "fullName": "tests/integration/test_voice_flow.py::TestVoiceFlowIntegration::test_voice_response_text_to_speech_conversion",
-          "state": "passed"
-        },
-        {
-          "name": "test_voice_session_maintains_context",
-          "fullName": "tests/integration/test_voice_flow.py::TestVoiceFlowIntegration::test_voice_session_maintains_context",
-          "state": "passed"
-        },
-        {
-          "name": "test_voice_fallback_to_text_response",
-          "fullName": "tests/integration/test_voice_flow.py::TestVoiceFlowIntegration::test_voice_fallback_to_text_response",
-          "state": "passed"
-        },
-        {
-          "name": "test_voice_handles_west_african_accent",
-          "fullName": "tests/integration/test_voice_flow.py::TestVoiceFlowIntegration::test_voice_handles_west_african_accent",
+          "name": "test_close_redis_connection",
+          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_close_redis_connection",
           "state": "passed"
         }
       ]

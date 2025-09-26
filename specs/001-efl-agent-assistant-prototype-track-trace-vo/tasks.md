@@ -93,8 +93,8 @@
 - [x] T041 GET /sessions/{sessionId}/messages endpoint in backend/src/api/session_messages.py ✅
 
 ## Phase 3.5: Integration & Middleware
-- [ ] T042 Authentication middleware with JWT validation in backend/src/middleware/auth.py ⚠️ NOT IMPLEMENTED
-- [ ] T043 Redis session store implementation in backend/src/storage/redis_session_store.py ⚠️ NOT IMPLEMENTED
+- [x] T042 Authentication middleware with JWT validation in backend/src/middleware/auth.py ✅ IMPLEMENTED
+- [x] T043 Redis session store implementation in backend/src/storage/redis_session_store.py ✅ IMPLEMENTED
 - [x] T044 Error handling and logging middleware in backend/src/middleware/error_handler.py ✅
 - [x] T045 CORS and security headers configuration in backend/src/middleware/security.py ✅
 - [x] T046 Circuit breaker for external API calls in backend/src/lib/circuit_breaker.py ✅
@@ -196,6 +196,7 @@ Task: "Contract test GET /sessions/{id}/messages in tests/contract/test_session_
 *GATE: Checked by main() before returning*
 
 - [x] All contracts have corresponding tests ✅ IMPLEMENTED AND WORKING
+- [x] JWT authentication middleware implemented ✅ IMPLEMENTED AND WORKING
 - [x] All entities have model tasks ✅
 - [x] All tests come before implementation ✅ IMPLEMENTED AND WORKING
 - [x] Parallel tasks truly independent ✅

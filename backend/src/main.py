@@ -11,6 +11,7 @@ from slowapi.util import get_remote_address
 from src.api import health, track, containers, bl, sessions, session_messages, voice
 from src.core.config import settings
 from src.lib.circuit_breaker import CircuitBreakerManager
+from src.middleware.auth import AuthMiddleware
 from src.middleware.error_handler import ErrorHandlerMiddleware
 from src.middleware.security import SecurityMiddleware
 
@@ -56,6 +57,9 @@ def create_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Authentication middleware
+    app.add_middleware(AuthMiddleware)
 
     # Security middleware (temporarily disabled for debugging)
     # app.add_middleware(SecurityMiddleware)

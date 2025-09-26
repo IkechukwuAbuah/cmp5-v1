@@ -4,7 +4,7 @@ import io
 import logging
 import tempfile
 import wave
-from typing import Dict, Any, Optional, Tuple, BinaryIO
+from typing import Dict, Any, Optional, Tuple, BinaryIO, List
 from pathlib import Path
 
 logger = logging.getLogger(__name__)

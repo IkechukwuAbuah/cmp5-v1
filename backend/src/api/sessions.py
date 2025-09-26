@@ -4,6 +4,7 @@ import time
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from src.middleware.auth import get_current_agent
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 
@@ -16,20 +17,6 @@ router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 
 
-def get_current_agent(agent_id: str) -> Agent:
-    """Get current agent (placeholder for authentication)."""
-    # This would typically verify JWT token and return authenticated agent
-    # For now, we'll create a mock agent
-    return Agent(
-        id=agent_id,
-        name="Mock Agent",
-        type="clearing",
-        contactInfo={
-            "phone": "+234-123-4567",
-            "email": "agent@efl.com",
-            "companyName": "Mock Agency"
-        }
-    )
 
 
 @router.get("/sessions/{sessionId}", response_model=SessionResponse)

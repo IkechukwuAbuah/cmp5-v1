@@ -9,6 +9,10 @@ from datetime import datetime, timedelta
 from src.core.config import settings
 from src.models.agent import Agent, AgentSession, ChannelType, SessionContext, SessionStatus, Message
 from src.lib.graceful_degradation import GracefulDegradationService
+from src.storage.redis_session_store import get_redis_session_store
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class SessionService:
@@ -16,12 +20,15 @@ class SessionService:
 
     def __init__(self):
         self.degradation_service = None
+        self.redis_session_store = None
         self._sessions: Dict[str, AgentSession] = {}
 
     async def get_instance(self) -> "SessionService":
         """Get singleton instance with dependencies initialized."""
         if self.degradation_service is None:
             self.degradation_service = await GracefulDegradationService.get_instance()
+        if self.redis_session_store is None:
+            self.redis_session_store = await get_redis_session_store()
         return self
 
     async def create_session(self, agent_id: str, channel: ChannelType) -> AgentSession:
@@ -197,15 +204,38 @@ class SessionService:
 
     async def _load_session_from_storage(self, session_id: str, agent_id: str) -> Optional[AgentSession]:
         """Load session from persistent storage."""
-        # This would typically load from Redis or database
-        # For now, return None
-        return None
+        if not self.redis_session_store:
+            logger.error("Redis session store not initialized")
+            return None
+
+        try:
+            session = await self.redis_session_store.load_session(session_id)
+
+            # Verify session belongs to the requesting agent
+            if session and session.agentId == agent_id:
+                logger.debug(f"Loaded session {session_id} from Redis storage")
+                return session
+
+            return None
+
+        except Exception as e:
+            logger.error(f"Failed to load session {session_id} from storage: {str(e)}")
+            return None
 
     async def _persist_session(self, session: AgentSession):
         """Persist session to storage."""
-        # This would typically save to Redis or database
-        # For now, just keep in memory
-        pass
+        if not self.redis_session_store:
+            logger.error("Redis session store not initialized")
+            return
+
+        try:
+            success = await self.redis_session_store.save_session(session)
+            if success:
+                logger.debug(f"Persisted session {session.id} to Redis storage")
+            else:
+                logger.error(f"Failed to persist session {session.id} to Redis storage")
+        except Exception as e:
+            logger.error(f"Error persisting session {session.id}: {str(e)}")
 
     async def cleanup_expired_sessions(self):
         """Clean up expired sessions."""
