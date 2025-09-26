@@ -1,91 +1,161 @@
 {
   "testModules": [
     {
-      "moduleId": "tests/unit/test_redis_session_store.py",
+      "moduleId": "tests/unit/test_log_sanitizer.py",
       "tests": [
         {
-          "name": "test_save_session_success",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_save_session_success",
+          "name": "test_sanitize_api_key",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_api_key",
           "state": "passed"
         },
         {
-          "name": "test_save_session_failure",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_save_session_failure",
+          "name": "test_sanitize_token",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_token",
           "state": "passed"
         },
         {
-          "name": "test_load_session_success",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_load_session_success",
+          "name": "test_sanitize_password",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_password",
           "state": "passed"
         },
         {
-          "name": "test_load_session_not_found",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_load_session_not_found",
+          "name": "test_sanitize_email_partial_mask",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_email_partial_mask",
           "state": "passed"
         },
         {
-          "name": "test_load_session_failure",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_load_session_failure",
+          "name": "test_sanitize_phone_partial_mask",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_phone_partial_mask",
           "state": "passed"
         },
         {
-          "name": "test_delete_session_success",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_delete_session_success",
+          "name": "test_sanitize_container_id_partial_mask",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_container_id_partial_mask",
           "state": "passed"
         },
         {
-          "name": "test_delete_session_not_found",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_delete_session_not_found",
+          "name": "test_sanitize_dict",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_dict",
           "state": "passed"
         },
         {
-          "name": "test_session_exists_true",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_session_exists_true",
+          "name": "test_sanitize_nested_dict",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_nested_dict",
           "state": "passed"
         },
         {
-          "name": "test_session_exists_false",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_session_exists_false",
+          "name": "test_sanitize_list",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_list",
           "state": "passed"
         },
         {
-          "name": "test_get_session_ttl",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_get_session_ttl",
+          "name": "test_sanitize_headers",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_headers",
           "state": "passed"
         },
         {
-          "name": "test_extend_session_ttl_success",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_extend_session_ttl_success",
+          "name": "test_sanitize_url",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_url",
           "state": "passed"
         },
         {
-          "name": "test_cleanup_expired_sessions",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_cleanup_expired_sessions",
+          "name": "test_sanitize_empty_values",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_empty_values",
           "state": "passed"
         },
         {
-          "name": "test_get_session_count",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_get_session_count",
+          "name": "test_custom_patterns",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_custom_patterns",
+          "state": "failed",
+          "errors": [
+            {
+              "message": "self = <test_log_sanitizer.TestLogSanitizer object at 0x10a0d9e80>\n\n    def test_custom_patterns(self):\n        \"\"\"Test custom sanitization patterns.\"\"\"\n        custom_patterns = {\n            'custom_id': r'\\bCUST-\\d{6}\\b'\n        }\n        custom_sanitizer = LogSanitizer(custom_patterns=custom_patterns)\n    \n        text = \"Customer ID: CUST-123456\"\n>       result = custom_sanitizer.sanitize_string(text)\n\ntests/unit/test_log_sanitizer.py:161: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = <src.lib.log_sanitizer.LogSanitizer object at 0x10a0ffcd0>\ntext = 'Customer ID: CUST-123456', partial_mask = False\n\n    def sanitize_string(self, text: str, partial_mask: bool = False) -> str:\n        \"\"\"Sanitize sensitive data from a string.\n    \n        Args:\n            text: Text to sanitize\n            partial_mask: If True, partially mask values instead of full redaction\n    \n        Returns:\n            Sanitized text\n        \"\"\"\n        if not text:\n            return text\n    \n        sanitized = text\n        for pattern_name, pattern in self.patterns.items():\n            if partial_mask and pattern_name in ['email', 'phone', 'container_id']:\n                def mask_match(match):\n                    full_match = match.group(0)\n                    if pattern_name == 'email':\n                        parts = full_match.split('@')\n                        if len(parts) == 2:\n                            masked_user = parts[0][:2] + self.PARTIAL_MASK_CHAR * (len(parts[0]) - 2)\n                            return f\"{masked_user}@{parts[1]}\"\n                    elif pattern_name == 'phone':\n                        visible_digits = 4\n                        if len(full_match) > visible_digits:\n                            return self.PARTIAL_MASK_CHAR * (len(full_match) - visible_digits) + full_match[-visible_digits:]\n                    elif pattern_name == 'container_id':\n                        return full_match[:4] + self.PARTIAL_MASK_CHAR * 7\n                    return full_match\n    \n                sanitized = pattern.sub(mask_match, sanitized)\n            else:\n>               sanitized = pattern.sub(self.REDACTED, sanitized)\nE               AttributeError: 'str' object has no attribute 'sub'\n\nsrc/lib/log_sanitizer.py:82: AttributeError"
+            }
+          ]
+        },
+        {
+          "name": "test_custom_keys",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_custom_keys",
           "state": "passed"
         },
         {
-          "name": "test_serialize_session",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_serialize_session",
+          "name": "test_module_functions",
+          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_module_functions",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "tests/unit/test_logger.py",
+      "tests": [
+        {
+          "name": "test_format_basic_log",
+          "fullName": "tests/unit/test_logger.py::TestStructuredFormatter::test_format_basic_log",
           "state": "passed"
         },
         {
-          "name": "test_deserialize_session",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_deserialize_session",
+          "name": "test_format_with_correlation_id",
+          "fullName": "tests/unit/test_logger.py::TestStructuredFormatter::test_format_with_correlation_id",
           "state": "passed"
         },
         {
-          "name": "test_deserialize_session_invalid_data",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_deserialize_session_invalid_data",
+          "name": "test_format_with_extra_fields",
+          "fullName": "tests/unit/test_logger.py::TestStructuredFormatter::test_format_with_extra_fields",
           "state": "passed"
         },
         {
-          "name": "test_close_redis_connection",
-          "fullName": "tests/unit/test_redis_session_store.py::TestRedisSessionStore::test_close_redis_connection",
+          "name": "test_format_with_exception",
+          "fullName": "tests/unit/test_logger.py::TestStructuredFormatter::test_format_with_exception",
+          "state": "passed"
+        },
+        {
+          "name": "test_setup_logger_console",
+          "fullName": "tests/unit/test_logger.py::TestLoggerSetup::test_setup_logger_console",
+          "state": "passed"
+        },
+        {
+          "name": "test_setup_logger_with_file",
+          "fullName": "tests/unit/test_logger.py::TestLoggerSetup::test_setup_logger_with_file",
+          "state": "failed",
+          "errors": [
+            {
+              "message": "args = (<test_logger.TestLoggerSetup object at 0x10a0f0940>,), keywargs = {}\n\n    @wraps(func)\n    def patched(*args, **keywargs):\n>       with self.decoration_helper(patched,\n                                    args,\n                                    keywargs) as (newargs, newkeywargs):\n\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1334: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py:117: in __enter__\n    return next(self.gen)\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1316: in decoration_helper\n    arg = exit_stack.enter_context(patching)\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py:429: in enter_context\n    result = _cm_type.__enter__(cm)\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1389: in __enter__\n    self.target = self.getter()\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1564: in <lambda>\n    getter = lambda: _importer(target)\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1240: in _importer\n    thing = _dot_lookup(thing, comp, import_path)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nthing = <module 'logging' from '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/logging/__init__.py'>\ncomp = 'handlers', import_path = 'src.lib.logger.logging.handlers'\n\n    def _dot_lookup(thing, comp, import_path):\n        try:\n            return getattr(thing, comp)\n        except AttributeError:\n>           __import__(import_path)\nE           ModuleNotFoundError: No module named 'src.lib.logger.logging'; 'src.lib.logger' is not a package\n\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1229: ModuleNotFoundError"
+            }
+          ]
+        },
+        {
+          "name": "test_get_logger",
+          "fullName": "tests/unit/test_logger.py::TestLoggerSetup::test_get_logger",
+          "state": "passed"
+        },
+        {
+          "name": "test_logger_levels",
+          "fullName": "tests/unit/test_logger.py::TestLoggerSetup::test_logger_levels",
+          "state": "passed"
+        },
+        {
+          "name": "test_set_and_get_correlation_id",
+          "fullName": "tests/unit/test_logger.py::TestCorrelationId::test_set_and_get_correlation_id",
+          "state": "passed"
+        },
+        {
+          "name": "test_clear_correlation_id",
+          "fullName": "tests/unit/test_logger.py::TestCorrelationId::test_clear_correlation_id",
+          "state": "passed"
+        },
+        {
+          "name": "test_correlation_id_context_isolation",
+          "fullName": "tests/unit/test_logger.py::TestCorrelationId::test_correlation_id_context_isolation",
+          "state": "passed"
+        },
+        {
+          "name": "test_async_handler_emission",
+          "fullName": "tests/unit/test_logger.py::TestAsyncLoggingHandler::test_async_handler_emission",
+          "state": "passed"
+        },
+        {
+          "name": "test_async_handler_error_handling",
+          "fullName": "tests/unit/test_logger.py::TestAsyncLoggingHandler::test_async_handler_error_handling",
           "state": "passed"
         }
       ]

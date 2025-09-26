@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 import uuid
 from datetime import datetime
 from typing import Dict, Optional, Any, List
@@ -14,9 +13,11 @@ from src.services.response_service import ResponseService
 from src.chat.chat_errors import ChatErrorManager
 from src.chat.chat_response import ChatResponseFormatter
 from src.chat.chat_continuity import ChatContinuityManager
+from src.lib.logger import get_logger
+from src.lib.log_sanitizer import sanitize
 
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ChatInterfaceService:

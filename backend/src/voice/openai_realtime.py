@@ -2,11 +2,11 @@
 
 import asyncio
 import json
-import logging
 import base64
 import io
 from typing import Dict, Any, Optional, Callable, AsyncGenerator
 from datetime import datetime
+import time
 
 import openai
 from openai import AsyncOpenAI
@@ -15,9 +15,12 @@ from src.models.agent import Message, SessionContext
 from src.services.session_service import SessionService
 from src.services.response_service import ResponseService
 from src.services.track_service import TrackService
+from src.lib.logger import get_logger
+from src.lib.log_sanitizer import sanitize
+from src.middleware.logging import api_logger
 
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class OpenAIRealtimeService:
@@ -167,6 +170,16 @@ class OpenAIRealtimeService:
             if not self.client:
                 raise Exception("OpenAI client not initialized")
 
+            start_time = time.perf_counter()
+
+            # Log API request
+            await api_logger.log_api_request(
+                api_name="OPENAI_TTS",
+                method="POST",
+                url="https://api.openai.com/v1/audio/speech",
+                body={"model": "tts-1", "voice": "alloy", "input": text[:100] + "..." if len(text) > 100 else text}
+            )
+
             response = await self.client.audio.speech.create(
                 model="tts-1",
                 voice="alloy",  # Options: alloy, echo, fable, onyx, nova, shimmer
@@ -180,9 +193,27 @@ class OpenAIRealtimeService:
             async for chunk in response.iter_bytes():
                 audio_data += chunk
 
+            response_time = (time.perf_counter() - start_time) * 1000
+
+            # Log API response
+            await api_logger.log_api_response(
+                api_name="OPENAI_TTS",
+                status_code=200,
+                response_time=response_time,
+                body={"audio_size": len(audio_data)}
+            )
+
+            logger.info(f"Generated TTS audio: {len(audio_data)} bytes in {response_time:.2f}ms")
             return audio_data
 
         except Exception as e:
+            response_time = (time.perf_counter() - start_time) * 1000 if 'start_time' in locals() else 0
+            await api_logger.log_api_response(
+                api_name="OPENAI_TTS",
+                status_code=500,
+                response_time=response_time,
+                error=str(e)
+            )
             logger.error(f"Error generating audio response: {e}")
             # Return silence or error audio
             return self._generate_silence_audio()

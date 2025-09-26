@@ -11,9 +11,11 @@ from slowapi.util import get_remote_address
 from src.api import health, track, containers, bl, sessions, session_messages, voice
 from src.core.config import settings
 from src.lib.circuit_breaker import CircuitBreakerManager
+from src.lib.logger import setup_logger
 from src.middleware.auth import AuthMiddleware
 from src.middleware.error_handler import ErrorHandlerMiddleware
 from src.middleware.security import SecurityMiddleware
+from src.middleware.logging import LoggingMiddleware
 
 
 @asynccontextmanager
@@ -22,6 +24,13 @@ async def lifespan(app: FastAPI):
     # Startup
     print(f"🚀 Starting EFL Agent Assistant v{settings.VERSION}")
     print(f"📍 Environment: {settings.ENVIRONMENT}")
+
+    # Initialize logging
+    setup_logger(
+        name="efl_agent",
+        level=settings.LOG_LEVEL,
+        log_file="logs/app.log" if settings.ENVIRONMENT != "testing" else None
+    )
 
     # Initialize circuit breaker manager
     CircuitBreakerManager.initialize()
@@ -57,6 +66,10 @@ def create_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Logging middleware (should be early in the chain)
+    if settings.ENABLE_REQUEST_LOGGING:
+        app.add_middleware(LoggingMiddleware, log_level=settings.LOG_LEVEL)
 
     # Authentication middleware
     app.add_middleware(AuthMiddleware)

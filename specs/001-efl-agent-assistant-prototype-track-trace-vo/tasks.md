@@ -120,16 +120,17 @@
 - [x] T052.8 [P] Culturally appropriate error messages for logistics domain in backend/src/localisation/cultural_messages.py ✅ IMPLEMENTED
 - [x] T052.9 [P] Localisation middleware for dynamic language switching in backend/src/middleware/localisation.py ✅ IMPLEMENTED
 - [x] T052.10 [P] Voice command grammar documentation with logistics examples in docs/voice-grammar.md ✅ IMPLEMENTED
+- Verification: EFLP-215 marked Done on 2025-09-26 after validating localisation artefacts across code and docs.
 
 ## Phase 3.7: Polish
 - [ ] T063 [P] Unit tests for container model validation in tests/unit/test_container_model.py ⚠️ NOT IMPLEMENTED
-- [ ] T064 [P] Unit tests for tracking service logic in tests/unit/test_track_service.py ⚠️ NOT IMPLEMENTED
+- [x] T064 [P] Unit tests for tracking service logic in tests/unit/test_track_service.py ✅
 - [ ] T065 [P] Unit tests for session management in tests/unit/test_session_service.py ⚠️ NOT IMPLEMENTED
-- [ ] T066 [P] Unit tests for external API integration in tests/unit/test_external_api.py ⚠️ NOT IMPLEMENTED
+- [x] T066 [P] Unit tests for external API integration in tests/unit/test_external_api.py ✅
 - [ ] T067 Performance tests for <5s response time in tests/performance/test_response_time.py ⚠️ NOT IMPLEMENTED
 - [ ] T068 Load tests for 100 concurrent users in tests/performance/test_load.py ⚠️ NOT IMPLEMENTED
 - [ ] T069 [P] Update API documentation with OpenAPI spec and multi-channel quickstart guides ⚠️ NOT IMPLEMENTED
-- [ ] T070 [P] Add request/response logging for debugging ⚠️ NOT IMPLEMENTED
+- [✅] T070 [P] Add request/response logging for debugging ✅ COMPLETED
 - [ ] T071 Remove code duplication and optimize imports (automated via pre-commit hooks) ⚠️ NOT IMPLEMENTED
 - [ ] T072 Run manual testing scenarios from quickstart.md ⚠️ NOT IMPLEMENTEDi've editted
 

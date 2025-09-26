@@ -8,6 +8,9 @@ from typing import Any, Callable, Dict, Optional
 from weakref import WeakKeyDictionary
 
 from src.core.config import settings
+from src.lib.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class CircuitState(Enum):
@@ -81,8 +84,13 @@ class CircuitBreaker:
         self._success_count += 1
 
         if self._state == CircuitState.HALF_OPEN and self._success_count >= 1:
+            old_state = self._state
             self._state = CircuitState.CLOSED
             self._success_count = 0
+            logger.info(
+                f"Circuit breaker '{self.name}' state changed: {old_state.value} -> {self._state.value}",
+                extra={'circuit_breaker_status': self._state.value}
+            )
 
     def _on_failure(self) -> None:
         """Handle failed call."""
@@ -90,7 +98,12 @@ class CircuitBreaker:
         self._last_failure_time = time.time()
 
         if self._failure_count >= self.failure_threshold:
+            old_state = self._state
             self._state = CircuitState.OPEN
+            logger.warning(
+                f"Circuit breaker '{self.name}' opened after {self._failure_count} failures",
+                extra={'circuit_breaker_status': self._state.value}
+            )
 
     @property
     def state(self) -> CircuitState:

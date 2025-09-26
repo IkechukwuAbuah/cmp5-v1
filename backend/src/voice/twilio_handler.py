@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import logging
 import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
@@ -15,9 +14,11 @@ from src.models.agent import ChannelType, AgentSession, Message
 from src.services.session_service import SessionService
 from src.services.response_service import ResponseService
 from src.services.track_service import TrackService
+from src.lib.logger import get_logger
+from src.lib.log_sanitizer import sanitize, sanitize_headers
 
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class TwilioVoiceHandler:
