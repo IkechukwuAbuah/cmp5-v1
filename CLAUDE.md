@@ -2,146 +2,219 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Development Commands
 
-This is a Claude Code session management project with sophisticated logging and orchestration capabilities. The repository contains session logs and configuration for enhanced session management with "The SMD" output style.
+### Running the Application
+```bash
+cd backend
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-## Output Style Configuration
+### Testing
+```bash
+# Run all tests
+cd backend && pytest tests/ -v
 
-This project uses **The SMD** output style, configured in `.claude/settings.local.json`. This is a sophisticated Session Manager output style that emphasizes:
-- Visual-first communication with tables and diagrams
-- Systematic session tracking and orchestration
-- 3-layer response architecture (Session Governance, Decision Intelligence, Execution & Tracking)
-- WAT (West Africa Time) timestamp signatures
+# Run specific test types
+pytest tests/contract/ -v      # API contract validation
+pytest tests/integration/ -v   # End-to-end scenarios
+pytest tests/unit/ -v          # Individual component tests
 
-## Key Project Components
+# Run with coverage (minimum 80% required)
+pytest --cov=src tests/
 
-### Session Logging System
-- **Location**: `logs/status_line.json`
-- Contains detailed session tracking data including timestamps, costs, API usage, and status line outputs
-- Tracks model usage (Sonnet 4, Opus 4.1)
-- Records session IDs and transcript paths
+# Run single test file
+pytest tests/contract/test_health.py -v
+```
 
-### Cursor Rules Integration
-- **Location**: `.cursor/rules/session-manager.mdc`
-- Contains detailed session manager orchestration rules
-- Defines delegation strategies for different task complexities
-- Includes SDD/TDD workflow integration patterns
+### Code Quality
+```bash
+cd backend
 
-## Session Management Architecture
+# Format code
+black src/
+isort src/
 
-### Delegation Decision Matrix
-When working on tasks in this codebase, use this complexity assessment:
+# Lint code
+flake8 src/
+ruff check src/
 
-| Task Complexity | Routing Strategy | Tool Selection |
-|----------------|-----------------|----------------|
-| Simple (<50 lines, single file) | Direct implementation | Claude Code |
-| Medium (multiple files, architectural) | Strategic orchestration | Subagents + SDD/TDD |
-| Complex (technical expertise) | Tactical delegation | Gemini/Cursor/Codex CLI |
-| Massive (>50 files, large context) | Large context analysis | Gemini CLI |
+# Type checking (if applicable)
+mypy src/
+```
 
-### Tool Preference Hierarchy
+### Spec-Driven Development Commands
+```bash
+# Check current feature context
+export SPECIFY_FEATURE=001-efl-agent-assistant-prototype-track-trace-vo
 
-**For Analysis & Discovery:**
-1. Gemini CLI - Large-scale analysis (50+ files)
-2. Subagent - Specialized domain analysis
-3. Direct Claude - Focused file analysis
+# Update progress tracking
+SPECIFY_FEATURE=001-efl-agent-assistant-prototype-track-trace-vo .specify/scripts/bash/update-agent-context.sh
 
-**For Implementation:**
-1. Codex CLI - Autonomous implementation
-2. Cursor CLI - Interactive development
-3. Subagent - Specialized modifications
-4. Direct Claude - Simple edits
+# Check prerequisites
+.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
+```
+
+## Architecture Overview
+
+### High-Level Structure
+This is an **EFL Agent Assistant** - an AI-powered container tracking system for logistics professionals. It features:
+
+- **Multi-channel Interface**: Both voice (Twilio + OpenAI Realtime) and chat support
+- **Natural Language Processing**: Users can query containers using everyday language
+- **External API Integration**: Real-time data from EFL Terminal and CMA CGM APIs
+- **Graceful Degradation**: Circuit breakers protect against external API failures
+- **Session Management**: Multi-turn conversations with context preservation
+
+### Technology Stack
+- **Backend**: FastAPI (Python 3.11) with async/await patterns
+- **Database**: Redis for session management and caching
+- **External APIs**: EFL Terminal, CMA CGM, OpenAI Realtime, Twilio
+- **Testing**: pytest with comprehensive contract and integration tests
+- **Authentication**: JWT-based role-based access control
+
+### Core System Components
+
+#### 1. API Layer (`backend/src/api/`)
+RESTful endpoints following this pattern:
+- `/api/v1/health` - System health and service monitoring
+- `/api/v1/track` - Natural language container tracking
+- `/api/v1/containers/{id}` - Container details and milestones
+- `/api/v1/bl/{number}` - Bill of lading information
+- `/api/v1/sessions/{id}` - Session management and message history
+- `/api/v1/voice/` - Voice interaction endpoints
+
+#### 2. Services Layer (`backend/src/services/`)
+Business logic components:
+- **TrackService**: Container/BL tracking with NLP processing
+- **SessionService**: Multi-turn conversation management
+- **AgentService**: Role-based authentication and authorization
+- **ExternalAPIService**: EFL Terminal and CMA CGM integration
+- **VoiceService**: OpenAI Realtime API integration
+- **ResponseService**: Multi-channel response formatting
+- **ChannelRouter**: Routes requests between voice and chat channels
+
+#### 3. Data Models (`backend/src/models/`)
+Pydantic models for type safety:
+- **Container**: Container information, status, milestones
+- **Agent**: User authentication and role management
+- **Session**: Multi-turn conversation context
+- **BillOfLading**: Shipping document information
+
+#### 4. Circuit Breaker Architecture (`backend/src/lib/`)
+- **CircuitBreaker**: Protection against external API failures
+- **GracefulDegradation**: Fallback mechanisms when services unavailable
+- Configurable timeouts and retry policies
+
+#### 5. Voice Integration (`backend/src/voice/`)
+Complete voice interaction system:
+- **OpenAIRealtime**: Real-time voice processing with OpenAI
+- **TwilioHandler**: Phone call management and audio streaming
+- **SessionContinuity**: Maintains context across voice interactions
+- **AudioUtils**: Audio format conversion and processing
+
+#### 6. Chat Integration (`backend/src/chat/`)
+Text-based interaction system:
+- **ChatInterface**: Text message processing
+- **ChatContinuity**: Context preservation for chat sessions
+- **ChatResponse**: Response formatting for different channels
+
+### Key Architectural Patterns
+
+#### Multi-Channel Session Management
+The system maintains session continuity across voice and chat channels. Sessions are stored in Redis with:
+- Session ID linking voice calls and chat messages
+- Context preservation for multi-turn conversations
+- Channel-specific state management
+
+#### Circuit Breaker Protection
+All external API calls are protected by circuit breakers:
+- EFL Terminal API integration with fallback mechanisms
+- CMA CGM API with graceful degradation
+- OpenAI API with rate limiting and error handling
+
+#### Test-Driven Development Structure
+- **Contract Tests**: Validate API specifications before implementation
+- **Integration Tests**: End-to-end user journey validation
+- **Unit Tests**: Individual component testing
+- Minimum 80% code coverage requirement
 
 ## Development Workflow
 
-### Session Governance Requirements
-Every session should track:
-- Session ID and phase (discovery/planning/execution)
-- Context usage and token limits
-- Tool validation status
-- Active delegation stack
+### Spec-Driven Development (SDD)
+This project follows the Spec-Driven Development methodology:
+1. All features start with `/specify` command to create specifications
+2. Use `/plan` to generate technical implementation plans
+3. Use `/tasks` to break down work into actionable tasks
+4. Tasks are executed following dependencies (setup � tests � implementation)
+5. Progress tracked in `specs/001-efl-agent-assistant-prototype-track-trace-vo/tasks.md`
 
-### Response Pattern
-When responding to requests in this project, follow this structure:
-1. Session state header with governance info
-2. Decision matrix showing routing logic
-3. Action plan with visual workflow
-4. Tool selection justification
-5. Execution steps with status tracking
-6. Artifacts summary
-7. Next session handoff instructions
-
-### Visual Communication Standards
-- Use Mermaid diagrams for workflows
-- Include tables for all comparisons
-- Use Unicode status symbols: ✓ ⚠ ✗ ● ○
-- Format all code and commands in code blocks
-- Include progress bars for multi-step processes
-
-## SDD/TDD Integration
-
-The project supports Spec-Driven Development and Test-Driven Development workflows:
-
-### SDD Phases
-1. `/specify` - Define requirements with testable criteria
-2. `/plan` - Technical approach and architecture
-3. `/tasks` - Break down into ordered implementation steps
-4. `/implement` - Execute with TDD enforcement
-
-### TDD Guard Integration
-- Enforces test-first development
-- Blocks implementation without failing tests
-- Integrates with specification-derived test requirements
-
-## Session Logging Protocol
-
-### Session Entry Structure
-```json
-{
-  "session_id": "uuid",
-  "timestamp": "ISO-8601",
-  "model": "model-name",
-  "cost": {
-    "total_cost_usd": 0.0,
-    "total_api_duration_ms": 0
-  },
-  "status_line_output": "formatted-status"
-}
+### Commit Strategy
+**One Task = One Commit**
+```bash
+# Format: type(scope): description (T[task_number])
+feat: implement TrackService for container/BL tracking logic (T027)
+test: add contract tests for health endpoint (T006)
+fix: resolve circuit breaker timeout issues (T046)
 ```
 
-### Key Metrics Tracked
-- Total cost in USD
-- API duration in milliseconds
-- Lines added/removed
-- Token usage status
+### Task Dependencies
+Respect these implementation dependencies:
+1. Setup (T001-T005) � All other phases
+2. Contract tests (T006-T012) � API endpoints (T035-T041)
+3. Integration tests (T013-T017) � Services (T027-T034)
+4. Models (T018-T025) � Services (T027-T034)
+5. Services (T027-T034) � API endpoints (T035-T041)
 
-## Important Notes
+### Feature Context
+Current development focus: **Voice Integration** (Phase 3.5)
+- Set `SPECIFY_FEATURE=001-efl-agent-assistant-prototype-track-trace-vo` when working
+- Check progress in `specs/001-efl-agent-assistant-prototype-track-trace-vo/tasks.md`
+- Update context with progress tracking scripts
 
-1. **WAT Timestamp**: End every response with current West Africa Time timestamp
-2. **Visual First**: Include at least one table or diagram per response
-3. **Session Hygiene**: Track all file operations with timestamps
-4. **Logic Review**: Run critical reasoning pass before closing updates
-5. **Tool Validation**: Always validate recommended tools before use
+## Performance and Quality Requirements
 
-## Error Handling
+- **Response Time**: <5 seconds for chat, <20 seconds for voice
+- **Concurrent Users**: Support 100 simultaneous users
+- **Container Volume**: Handle 10K tracking requests per day
+- **Availability**: 99.5% uptime with comprehensive health monitoring
+- **Security**: TLS 1.3+, GDPR compliance, audit logging
+- **Test Coverage**: Minimum 80% coverage for all new code
 
-Use structured error reporting:
+## Key Files to Understand
+
+- `backend/src/main.py` - FastAPI application entry point
+- `backend/src/services/track_service.py` - Core tracking business logic
+- `backend/src/services/session_service.py` - Multi-turn conversation management
+- `backend/src/lib/circuit_breaker.py` - External API protection
+- `specs/001-efl-agent-assistant-prototype-track-trace-vo/plan.md` - Technical architecture decisions
+- `AGENTS.md` - AI development guidelines and workflow
+- `CONTRIBUTING.md` - Detailed development process and PR guidelines
+
+## Linear Issue Workflow Support
+
+### When Verifying Linear Issues
+1. Start from `docs/prompts/check_linear_issue_status.md` and adapt the prompt with the issue ID or URL.
+2. Pull the full issue payload from Linear (status, assignee, subtasks, comment history).
+3. Compare described progress with repository changes and test artefacts to confirm completion.
+4. Highlight blockers, dependencies, or missing deliverables discovered in recent updates.
+5. Deliver the summary using the standard report format below and suggest next actions when work remains.
+
+### Standard Report Format
 ```
-┌─ ERROR ENCOUNTERED ─────────────────┐
-│ Error: [message]                     │
-│ Context: [what-was-attempted]        │
-│ Fallback: [alternative-approach]     │
-│ Prevention: [future-avoidance]       │
-└─────────────────────────────────────┘
+Issue Status Report:
+- Issue ID: [ID]
+- Title: [Title]
+- Current Status: [Status]
+- Progress: [X/Y tasks completed]
+- Last Updated: [Date]
+- Assignee: [Name]
+- Completion Status: [Addressed/Not Addressed/Partially Addressed]
+- Evidence Collected: [Key files, test results, notes]
+- Next Actions: [List of recommended actions]
 ```
 
-## Session Continuity
-us t
-When resuming work:
-1. Check `logs/status_line.json` for previous session context
-2. Review cost metrics and token usage
-3. Identify incomplete tasks from previous sessions
-4. Maintain tool selection reasoning for consistency
-
-This project emphasizes systematic session management, visual communication, and sophisticated orchestration of AI tools and workflows.
+### Close-Out Checklist
+- Reference concrete repo evidence (paths, tests) that support the reported status.
+- Update `tasks.md` to reflect verified progress.
+- Post a Linear comment summarising findings and transition the issue to `Done` when warranted.

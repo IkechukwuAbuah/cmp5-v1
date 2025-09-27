@@ -1,0 +1,644 @@
+openapi: 3.0.3
+info:
+  title: EFL Agent Assistant - Track & Trace API
+  version: 1.0.0
+  description: API for tracking container and shipment status with voice and chat support
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+  - url: https://api.efl.com/agent-assistant/v1
+    description: Production server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: JWT token for authenticated requests
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for service-to-service authentication
+
+  schemas:
+    Container:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "EFLU7896543"
+        containerNumber:
+          type: string
+          example: "EFLU7896543"
+        isoCode:
+          type: string
+          example: "45G1"
+        status:
+          $ref: '#/components/schemas/ContainerStatus'
+        location:
+          $ref: '#/components/schemas/TerminalLocation'
+        billOfLading:
+          $ref: '#/components/schemas/BillOfLading'
+        agentId:
+          type: string
+          example: "agent_123"
+        milestones:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContainerMilestone'
+        lastUpdated:
+          type: string
+          format: date-time
+        nextStep:
+          type: string
+          example: "Awaiting exam booking"
+      required:
+        - id
+        - containerNumber
+        - status
+        - agentId
+
+    ContainerStatus:
+      type: string
+      enum:
+        - in_transit
+        - at_terminal
+        - discharged
+        - cleared_for_exam
+        - under_exam
+        - released
+        - delivered
+      example: "at_terminal"
+
+    BillOfLading:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "ABC1234567"
+        blNumber:
+          type: string
+          example: "ABC1234567"
+        vesselVoyage:
+          $ref: '#/components/schemas/VesselVoyage'
+        origin:
+          type: string
+          example: "Lagos"
+        destination:
+          type: string
+          example: "Ikorodu"
+        estimatedArrival:
+          type: string
+          format: date-time
+        actualArrival:
+          type: string
+          format: date-time
+        shippingLine:
+          type: string
+          example: "CMA CGM"
+        agentId:
+          type: string
+          example: "agent_123"
+      required:
+        - id
+        - blNumber
+        - shippingLine
+        - agentId
+
+    VesselVoyage:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "voy_123"
+        vesselName:
+          type: string
+          example: "Marco Polo"
+        voyageNumber:
+          type: string
+          example: "12345"
+        carrier:
+          type: string
+          example: "CMA CGM"
+        originPort:
+          type: string
+          example: "Lagos Port"
+        destinationPort:
+          type: string
+          example: "EFL Terminal, Ikorodu"
+        estimatedDeparture:
+          type: string
+          format: date-time
+        estimatedArrival:
+          type: string
+          format: date-time
+        actualDeparture:
+          type: string
+          format: date-time
+        actualArrival:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/VoyageStatus'
+      required:
+        - id
+        - vesselName
+        - voyageNumber
+        - carrier
+
+    VoyageStatus:
+      type: string
+      enum:
+        - planned
+        - departed
+        - in_transit
+        - arrived
+        - delayed
+      example: "in_transit"
+
+    TerminalLocation:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "loc_123"
+        name:
+          type: string
+          example: "Yard A1"
+        type:
+          $ref: '#/components/schemas/LocationType'
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        terminalId:
+          type: string
+          example: "efl_terminal"
+        isActive:
+          type: boolean
+          example: true
+      required:
+        - id
+        - name
+        - type
+        - isActive
+
+    LocationType:
+      type: string
+      enum:
+        - yard
+        - gate_in
+        - gate_out
+        - warehouse
+        - exam_area
+      example: "yard"
+
+    Coordinates:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: float
+          example: 6.4474
+        longitude:
+          type: number
+          format: float
+          example: 3.3903
+      required:
+        - latitude
+        - longitude
+
+    ContainerMilestone:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "mil_123"
+        containerId:
+          type: string
+          example: "EFLU7896543"
+        eventType:
+          $ref: '#/components/schemas/EventType'
+        location:
+          $ref: '#/components/schemas/TerminalLocation'
+        timestamp:
+          type: string
+          format: date-time
+        description:
+          type: string
+          example: "Container discharged from vessel"
+        source:
+          $ref: '#/components/schemas/DataSource'
+        metadata:
+          type: object
+      required:
+        - id
+        - containerId
+        - eventType
+        - timestamp
+        - description
+        - source
+
+    EventType:
+      type: string
+      enum:
+        - loaded
+        - discharged
+        - gate_in
+        - gate_out
+        - customs_exam
+        - released
+        - delivered
+        - transshipment
+      example: "discharged"
+
+    DataSource:
+      type: string
+      enum:
+        - efl_terminal
+        - cma_cgm
+        - tos
+      example: "efl_terminal"
+
+    TrackRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          description: "Natural language query for tracking"
+          example: "Track container EFLU7896543"
+        channel:
+          $ref: '#/components/schemas/ChannelType'
+        sessionId:
+          type: string
+          description: "Session identifier for conversation context"
+        agentId:
+          type: string
+          description: "Agent identifier"
+      required:
+        - query
+        - channel
+        - agentId
+
+    ChannelType:
+      type: string
+      enum:
+        - voice
+        - chat
+        - api
+      example: "chat"
+
+    TrackResponse:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          example: "sess_123"
+        response:
+          type: string
+          description: "Natural language response"
+          example: "Container EFLU7896543 is currently at EFL Terminal, Ikorodu. Status: Cleared for exam."
+        containers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Container'
+        billOfLadings:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillOfLading'
+        nextStep:
+          type: string
+          example: "You may now book a customs examination."
+        followUp:
+          type: boolean
+          description: "Whether this response expects user follow-up"
+          example: true
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          example: 0.95
+        metadata:
+          type: object
+          description: "Additional response metadata"
+      required:
+        - sessionId
+        - response
+        - followUp
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "Error code"
+        message:
+          type: string
+          description: "Human-readable error message"
+        details:
+          type: object
+          description: "Additional error details"
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - error
+        - message
+        - timestamp
+
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - degraded
+            - unhealthy
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+          example: "1.0.0"
+        services:
+          type: object
+          additionalProperties:
+            type: string
+            enum:
+              - up
+              - down
+              - degraded
+      required:
+        - status
+        - timestamp
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Check the health status of the service
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+
+  /track:
+    post:
+      summary: Track container or shipment
+      description: "Track container status using natural language queries. Supports both chat and voice channels."
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackRequest'
+      responses:
+        '200':
+          description: Successful tracking response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Container or shipment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /containers/{containerId}:
+    get:
+      summary: Get container details by ID
+      description: Retrieve detailed container information including status, location, and milestones
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: containerId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "EFLU7896543"
+      responses:
+        '200':
+          description: Container found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Container'
+        '401':
+          description: Authentication required
+        '403':
+          description: Insufficient permissions
+        '404':
+          description: Container not found
+        '500':
+          description: Internal server error
+
+  /containers/{containerId}/milestones:
+    get:
+      summary: Get container milestone history
+      description: Retrieve historical status changes and events for a container
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: containerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Milestones retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  milestones:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContainerMilestone'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+        '401':
+          description: Authentication required
+        '403':
+          description: Insufficient permissions
+        '404':
+          description: Container not found
+        '500':
+          description: Internal server error
+
+  /bl/{blNumber}:
+    get:
+      summary: Get bill of lading details
+      description: Retrieve BL information and associated containers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: blNumber
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "ABC1234567"
+      responses:
+        '200':
+          description: BL found with associated containers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillOfLading'
+        '401':
+          description: Authentication required
+        '403':
+          description: Insufficient permissions
+        '404':
+          description: BL not found
+        '500':
+          description: Internal server error
+
+  /sessions/{sessionId}:
+    get:
+      summary: Get session information
+      description: Retrieve session details including conversation history and context
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session information retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  agentId:
+                    type: string
+                  channel:
+                    $ref: '#/components/schemas/ChannelType'
+                  startTime:
+                    type: string
+                    format: date-time
+                  context:
+                    type: object
+                  messageCount:
+                    type: integer
+        '401':
+          description: Authentication required
+        '403':
+          description: Insufficient permissions
+        '404':
+          description: Session not found
+        '500':
+          description: Internal server error
+
+  /sessions/{sessionId}/messages:
+    get:
+      summary: Get session message history
+      description: Retrieve all messages in a conversation session
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                          enum: [user, assistant]
+                        content:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                  total:
+                    type: integer
+        '401':
+          description: Authentication required
+        '403':
+          description: Insufficient permissions
+        '404':
+          description: Session not found
+        '500':
+          description: Internal server error

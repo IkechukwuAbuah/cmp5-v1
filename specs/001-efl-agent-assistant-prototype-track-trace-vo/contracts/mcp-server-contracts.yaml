@@ -1,0 +1,364 @@
+openapi: 3.0.3
+info:
+  title: EFL Agent Assistant - MCP Server Contracts
+  version: 1.0.0
+  description: Model Context Protocol server contracts for external API integrations
+
+components:
+  schemas:
+    MCPToolRequest:
+      type: object
+      properties:
+        toolName:
+          type: string
+          description: "Name of the MCP tool to invoke"
+          example: "track_container"
+        parameters:
+          type: object
+          description: "Parameters for the tool"
+        context:
+          type: object
+          description: "Session and conversation context"
+      required:
+        - toolName
+        - parameters
+
+    MCPToolResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: "Whether the tool execution was successful"
+        data:
+          type: object
+          description: "Tool response data"
+        error:
+          type: string
+          description: "Error message if success is false"
+        metadata:
+          type: object
+          description: "Additional tool metadata"
+      required:
+        - success
+
+    EFLTerminalContainer:
+      type: object
+      properties:
+        containerId:
+          type: string
+          example: "EFLU7896543"
+        status:
+          type: string
+          example: "at_terminal"
+        location:
+          type: string
+          example: "Yard A1"
+        lastMilestone:
+          type: string
+          example: "Discharged from vessel"
+        nextStep:
+          type: string
+          example: "Awaiting exam booking"
+        agentId:
+          type: string
+          example: "agent_123"
+        lastUpdated:
+          type: string
+          format: date-time
+      required:
+        - containerId
+        - status
+        - agentId
+
+    CMATrackEvent:
+      type: object
+      properties:
+        eventId:
+          type: string
+          example: "evt_123"
+        eventType:
+          type: string
+          enum: ["ARRI", "DEPA", "LOAD", "DISC", "GTIN", "GTOT"]
+          example: "DISC"
+        eventDescription:
+          type: string
+          example: "Discharge"
+        eventDateTime:
+          type: string
+          format: date-time
+        location:
+          type: string
+          example: "Lagos Port"
+        vesselName:
+          type: string
+          example: "Marco Polo"
+        voyageNumber:
+          type: string
+          example: "12345"
+        transportDocumentReference:
+          type: string
+          example: "ABC1234567"
+        equipmentReference:
+          type: string
+          example: "EFLU7896543"
+      required:
+        - eventId
+        - eventType
+        - eventDateTime
+
+    CMAShipment:
+      type: object
+      properties:
+        bookingReference:
+          type: string
+          example: "BKG123456"
+        transportDocumentReference:
+          type: string
+          example: "ABC1234567"
+        containers:
+          type: array
+          items:
+            type: string
+          example: ["EFLU7896543", "EFLU7796767"]
+        vesselName:
+          type: string
+          example: "Marco Polo"
+        voyageNumber:
+          type: string
+          example: "12345"
+        estimatedArrival:
+          type: string
+          format: date-time
+        actualArrival:
+          type: string
+          format: date-time
+        status:
+          type: string
+          example: "in_transit"
+      required:
+        - bookingReference
+        - transportDocumentReference
+
+paths:
+  /mcp/tools/track-container:
+    post:
+      summary: Track container using EFL Terminal and CMA CGM APIs
+      description: "Query container status from multiple data sources with fallback logic"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                containerId:
+                  type: string
+                  example: "EFLU7896543"
+                agentId:
+                  type: string
+                  example: "agent_123"
+              required:
+                - containerId
+                - agentId
+      responses:
+        '200':
+          description: Container tracking information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  container:
+                    $ref: '#/components/schemas/EFLTerminalContainer'
+                  cmaEvents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CMATrackEvent'
+                  dataSource:
+                    type: string
+                    enum: ["efl", "cma", "both"]
+                  lastUpdated:
+                    type: string
+                    format: date-time
+        '404':
+          description: Container not found in any data source
+        '500':
+          description: Error accessing external APIs
+
+  /mcp/tools/track-bl:
+    post:
+      summary: Track bill of lading and associated containers
+      description: "Query BL information and all associated containers"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                blNumber:
+                  type: string
+                  example: "ABC1234567"
+                agentId:
+                  type: string
+                  example: "agent_123"
+              required:
+                - blNumber
+                - agentId
+      responses:
+        '200':
+          description: BL tracking information with containers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bl:
+                    $ref: '#/components/schemas/CMAShipment'
+                  containers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EFLTerminalContainer'
+                  vesselInfo:
+                    type: object
+                  estimatedArrival:
+                    type: string
+                    format: date-time
+        '404':
+          description: BL not found
+        '500':
+          description: Error accessing external APIs
+
+  /mcp/tools/get-shipping-events:
+    post:
+      summary: Get shipping events from CMA CGM API
+      description: "Retrieve vessel and container events for fallback tracking"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transportDocumentReference:
+                  type: string
+                  example: "ABC1234567"
+                equipmentReference:
+                  type: string
+                  example: "EFLU7896543"
+              required:
+                - transportDocumentReference
+      responses:
+        '200':
+          description: Shipping events retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CMATrackEvent'
+                  vesselName:
+                    type: string
+                  voyageNumber:
+                    type: string
+                  lastEventDate:
+                    type: string
+                    format: date-time
+        '404':
+          description: No events found
+        '500':
+          description: Error accessing CMA CGM API
+
+  /mcp/tools/get-terminal-location:
+    post:
+      summary: Get current terminal location for container
+      description: "Query EFL Terminal API for container yard location"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                containerId:
+                  type: string
+                  example: "EFLU7896543"
+              required:
+                - containerId
+      responses:
+        '200':
+          description: Terminal location retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locationId:
+                    type: string
+                  locationName:
+                    type: string
+                  locationType:
+                    type: string
+                    enum: ["yard", "gate", "warehouse", "exam"]
+                  coordinates:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                      longitude:
+                        type: number
+        '404':
+          description: Container not found in terminal
+        '500':
+          description: Error accessing terminal API
+
+  /mcp/tools/validate-agent-access:
+    post:
+      summary: Validate agent permissions for container access
+      description: "Check if agent has permission to access specific container data"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agentId:
+                  type: string
+                  example: "agent_123"
+                containerId:
+                  type: string
+                  example: "EFLU7896543"
+                operation:
+                  type: string
+                  enum: ["read", "track", "update"]
+                  example: "read"
+              required:
+                - agentId
+                - containerId
+                - operation
+      responses:
+        '200':
+          description: Access granted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  granted:
+                    type: boolean
+                  permissions:
+                    type: array
+                    items:
+                      type: string
+                  restrictions:
+                    type: array
+                    items:
+                      type: string
+        '403':
+          description: Access denied
+        '500':
+          description: Error validating permissions

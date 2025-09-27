@@ -1,0 +1,279 @@
+{
+  "testModules": [
+    {
+      "moduleId": "tests/unit/test_session_service.py",
+      "tests": [
+        {
+          "name": "test_get_instance_initializes_dependencies",
+          "fullName": "tests/unit/test_session_service.py::TestSessionServiceInitialization::test_get_instance_initializes_dependencies",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_instance_reuses_existing_dependencies",
+          "fullName": "tests/unit/test_session_service.py::TestSessionServiceInitialization::test_get_instance_reuses_existing_dependencies",
+          "state": "passed"
+        },
+        {
+          "name": "test_create_session_voice_channel",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_create_session_voice_channel",
+          "state": "passed"
+        },
+        {
+          "name": "test_create_session_chat_channel",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_create_session_chat_channel",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_success",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_get_session_success",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_different_agent_access_denied",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_get_session_different_agent_access_denied",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_nonexistent",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_get_session_nonexistent",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_expired",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_get_session_expired",
+          "state": "passed"
+        },
+        {
+          "name": "test_update_session_context_success",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_update_session_context_success",
+          "state": "passed"
+        },
+        {
+          "name": "test_update_session_context_nonexistent",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_update_session_context_nonexistent",
+          "state": "passed"
+        },
+        {
+          "name": "test_end_session_success",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_end_session_success",
+          "state": "passed"
+        },
+        {
+          "name": "test_end_session_nonexistent",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_end_session_nonexistent",
+          "state": "passed"
+        },
+        {
+          "name": "test_add_message_success",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_add_message_success",
+          "state": "passed"
+        },
+        {
+          "name": "test_add_message_enforces_max_limit",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_add_message_enforces_max_limit",
+          "state": "passed"
+        },
+        {
+          "name": "test_add_message_nonexistent_session",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_add_message_nonexistent_session",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_messages_success",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_get_session_messages_success",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_messages_with_limit",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_get_session_messages_with_limit",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_messages_nonexistent_session",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_get_session_messages_nonexistent_session",
+          "state": "passed"
+        },
+        {
+          "name": "test_switch_channel_voice_to_chat",
+          "fullName": "tests/unit/test_session_service.py::TestMultiChannelSupport::test_switch_channel_voice_to_chat",
+          "state": "passed"
+        },
+        {
+          "name": "test_switch_channel_chat_to_voice",
+          "fullName": "tests/unit/test_session_service.py::TestMultiChannelSupport::test_switch_channel_chat_to_voice",
+          "state": "passed"
+        },
+        {
+          "name": "test_switch_channel_nonexistent_session",
+          "fullName": "tests/unit/test_session_service.py::TestMultiChannelSupport::test_switch_channel_nonexistent_session",
+          "state": "passed"
+        },
+        {
+          "name": "test_switch_channel_different_agent",
+          "fullName": "tests/unit/test_session_service.py::TestMultiChannelSupport::test_switch_channel_different_agent",
+          "state": "passed"
+        },
+        {
+          "name": "test_is_session_expired_active_within_timeout",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_is_session_expired_active_within_timeout",
+          "state": "passed"
+        },
+        {
+          "name": "test_is_session_expired_active_beyond_timeout",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_is_session_expired_active_beyond_timeout",
+          "state": "passed"
+        },
+        {
+          "name": "test_is_session_expired_with_recent_message",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_is_session_expired_with_recent_message",
+          "state": "passed"
+        },
+        {
+          "name": "test_is_session_expired_non_active_status",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_is_session_expired_non_active_status",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_last_activity_with_messages",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_get_session_last_activity_with_messages",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_last_activity_no_messages",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_get_session_last_activity_no_messages",
+          "state": "passed"
+        },
+        {
+          "name": "test_cleanup_expired_sessions",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_cleanup_expired_sessions",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_stats",
+          "fullName": "tests/unit/test_session_service.py::TestSessionStats::test_get_session_stats",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_stats_empty",
+          "fullName": "tests/unit/test_session_service.py::TestSessionStats::test_get_session_stats_empty",
+          "state": "passed"
+        },
+        {
+          "name": "test_update_context_from_user_message",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_update_context_from_user_message",
+          "state": "passed"
+        },
+        {
+          "name": "test_update_context_from_assistant_message",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_update_context_from_assistant_message",
+          "state": "passed"
+        },
+        {
+          "name": "test_context_preserved_across_channel_switch",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_context_preserved_across_channel_switch",
+          "state": "passed"
+        },
+        {
+          "name": "test_infer_intent_tracking",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_infer_intent_tracking",
+          "state": "passed"
+        },
+        {
+          "name": "test_infer_intent_help",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_infer_intent_help",
+          "state": "passed"
+        },
+        {
+          "name": "test_infer_intent_booking",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_infer_intent_booking",
+          "state": "passed"
+        },
+        {
+          "name": "test_infer_intent_general",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_infer_intent_general",
+          "state": "passed"
+        },
+        {
+          "name": "test_extract_entities_containers",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_extract_entities_containers",
+          "state": "passed"
+        },
+        {
+          "name": "test_extract_entities_bl_numbers",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_extract_entities_bl_numbers",
+          "state": "passed"
+        },
+        {
+          "name": "test_extract_entities_mixed",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_extract_entities_mixed",
+          "state": "passed"
+        },
+        {
+          "name": "test_extract_entities_case_insensitive",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_extract_entities_case_insensitive",
+          "state": "passed"
+        },
+        {
+          "name": "test_active_entities_limited",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_active_entities_limited",
+          "state": "passed"
+        },
+        {
+          "name": "test_load_session_from_storage_redis_error",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_load_session_from_storage_redis_error",
+          "state": "passed"
+        },
+        {
+          "name": "test_load_session_from_storage_no_redis",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_load_session_from_storage_no_redis",
+          "state": "passed"
+        },
+        {
+          "name": "test_persist_session_redis_error",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_persist_session_redis_error",
+          "state": "passed"
+        },
+        {
+          "name": "test_persist_session_no_redis",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_persist_session_no_redis",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_from_storage_agent_mismatch",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_get_session_from_storage_agent_mismatch",
+          "state": "passed"
+        },
+        {
+          "name": "test_concurrent_session_operations",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_concurrent_session_operations",
+          "state": "passed"
+        },
+        {
+          "name": "test_session_operations_with_invalid_data",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_session_operations_with_invalid_data",
+          "state": "passed"
+        },
+        {
+          "name": "test_cleanup_with_concurrent_access",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_cleanup_with_concurrent_access",
+          "state": "passed"
+        },
+        {
+          "name": "test_session_loaded_from_storage_on_miss",
+          "fullName": "tests/unit/test_session_service.py::TestPersistenceIntegration::test_session_loaded_from_storage_on_miss",
+          "state": "passed"
+        },
+        {
+          "name": "test_session_persisted_on_end",
+          "fullName": "tests/unit/test_session_service.py::TestPersistenceIntegration::test_session_persisted_on_end",
+          "state": "passed"
+        },
+        {
+          "name": "test_graceful_degradation_without_redis",
+          "fullName": "tests/unit/test_session_service.py::TestPersistenceIntegration::test_graceful_degradation_without_redis",
+          "state": "passed"
+        }
+      ]
+    }
+  ]
+}

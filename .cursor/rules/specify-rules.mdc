@@ -1,0 +1,28 @@
+# cmp5-v1 Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-09-25
+
+## Active Technologies
+- Python 3.11 + FastAPI, OpenAI Agents SDK, OpenAI Realtime API, Twilio telephony integration (001-efl-agent-assistant-prototype-track-trace-vo)
+- N/A (API-driven prototype with external integrations) (001-efl-agent-assistant-prototype-track-trace-vo)
+
+## Project Structure
+```
+backend/
+frontend/
+tests/
+```
+
+## Commands
+cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] pytest [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] ruff check .
+
+## Code Style
+Python 3.11: Follow standard conventions
+
+## Recent Changes
+- 001-efl-agent-assistant-prototype-track-trace-vo: Added Python 3.11 + FastAPI, OpenAI Agents SDK, OpenAI Realtime API, Twilio telephony integration
+- 001-efl-agent-assistant-prototype-track-trace-vo: Added Python 3.11 + FastAPI, OpenAI Agents SDK, OpenAI Realtime API, Twilio telephony integration
+- 001-efl-agent-assistant-prototype-track-trace-vo: Added Python 3.11 + FastAPI, OpenAI Agents SDK, OpenAI Realtime API, Twilio telephony integration
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
