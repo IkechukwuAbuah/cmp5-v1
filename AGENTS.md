@@ -45,6 +45,34 @@ SPECIFY_FEATURE=001-efl-agent-assistant-prototype-track-trace-vo .specify/script
 - Reference task numbers in all commit messages
 - Maintain task order and dependencies
 
+## 📈 Linear Workflow Management
+
+### Issue Status Verification Playbook
+1. Trigger the Linear check by drafting or reusing the `/specify` prompt from `docs/prompts/check_linear_issue_status.md`.
+2. Retrieve full issue details via the Linear API (status, assignee, updates, task list).
+3. Evaluate completion by comparing subtasks or acceptance criteria against repository evidence and test results.
+4. Capture recent updates or comments to surface blockers, dependencies, or pending reviews.
+5. Summarise findings with the standard report: current status, progress, blockers, next steps, and supporting artefacts.
+
+### Reporting Template
+```
+Issue Status Report:
+- Issue ID: [ID]
+- Title: [Title]
+- Current Status: [Status]
+- Progress: [X/Y tasks completed]
+- Last Updated: [Date]
+- Assignee: [Name]
+- Completion Status: [Addressed/Not Addressed/Partially Addressed]
+- Evidence Collected: [Key files, test results, notes]
+- Next Actions: [List of recommended actions]
+```
+
+### Follow-Up Checklist
+- Link repository evidence that demonstrates completion (e.g., `backend/src/localisation/en.py`).
+- Update `tasks.md` with the verified task status.
+- Leave a Linear comment summarising the verification and move the issue to `Done` when appropriate.
+
 ## 📝 Commit Strategy
 
 ### Commit Guidelines

@@ -1,161 +1,276 @@
 {
   "testModules": [
     {
-      "moduleId": "tests/unit/test_log_sanitizer.py",
+      "moduleId": "tests/unit/test_session_service.py",
       "tests": [
         {
-          "name": "test_sanitize_api_key",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_api_key",
+          "name": "test_get_instance_initializes_dependencies",
+          "fullName": "tests/unit/test_session_service.py::TestSessionServiceInitialization::test_get_instance_initializes_dependencies",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_token",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_token",
+          "name": "test_get_instance_reuses_existing_dependencies",
+          "fullName": "tests/unit/test_session_service.py::TestSessionServiceInitialization::test_get_instance_reuses_existing_dependencies",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_password",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_password",
+          "name": "test_create_session_voice_channel",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_create_session_voice_channel",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_email_partial_mask",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_email_partial_mask",
+          "name": "test_create_session_chat_channel",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_create_session_chat_channel",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_phone_partial_mask",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_phone_partial_mask",
+          "name": "test_get_session_success",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_get_session_success",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_container_id_partial_mask",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_container_id_partial_mask",
+          "name": "test_get_session_different_agent_access_denied",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_get_session_different_agent_access_denied",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_dict",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_dict",
+          "name": "test_get_session_nonexistent",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_get_session_nonexistent",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_nested_dict",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_nested_dict",
+          "name": "test_get_session_expired",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_get_session_expired",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_list",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_list",
+          "name": "test_update_session_context_success",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_update_session_context_success",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_headers",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_headers",
+          "name": "test_update_session_context_nonexistent",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_update_session_context_nonexistent",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_url",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_url",
+          "name": "test_end_session_success",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_end_session_success",
           "state": "passed"
         },
         {
-          "name": "test_sanitize_empty_values",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_empty_values",
+          "name": "test_end_session_nonexistent",
+          "fullName": "tests/unit/test_session_service.py::TestSessionCRUDOperations::test_end_session_nonexistent",
           "state": "passed"
         },
         {
-          "name": "test_custom_patterns",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_custom_patterns",
-          "state": "failed",
-          "errors": [
-            {
-              "message": "self = <test_log_sanitizer.TestLogSanitizer object at 0x10a0d9e80>\n\n    def test_custom_patterns(self):\n        \"\"\"Test custom sanitization patterns.\"\"\"\n        custom_patterns = {\n            'custom_id': r'\\bCUST-\\d{6}\\b'\n        }\n        custom_sanitizer = LogSanitizer(custom_patterns=custom_patterns)\n    \n        text = \"Customer ID: CUST-123456\"\n>       result = custom_sanitizer.sanitize_string(text)\n\ntests/unit/test_log_sanitizer.py:161: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = <src.lib.log_sanitizer.LogSanitizer object at 0x10a0ffcd0>\ntext = 'Customer ID: CUST-123456', partial_mask = False\n\n    def sanitize_string(self, text: str, partial_mask: bool = False) -> str:\n        \"\"\"Sanitize sensitive data from a string.\n    \n        Args:\n            text: Text to sanitize\n            partial_mask: If True, partially mask values instead of full redaction\n    \n        Returns:\n            Sanitized text\n        \"\"\"\n        if not text:\n            return text\n    \n        sanitized = text\n        for pattern_name, pattern in self.patterns.items():\n            if partial_mask and pattern_name in ['email', 'phone', 'container_id']:\n                def mask_match(match):\n                    full_match = match.group(0)\n                    if pattern_name == 'email':\n                        parts = full_match.split('@')\n                        if len(parts) == 2:\n                            masked_user = parts[0][:2] + self.PARTIAL_MASK_CHAR * (len(parts[0]) - 2)\n                            return f\"{masked_user}@{parts[1]}\"\n                    elif pattern_name == 'phone':\n                        visible_digits = 4\n                        if len(full_match) > visible_digits:\n                            return self.PARTIAL_MASK_CHAR * (len(full_match) - visible_digits) + full_match[-visible_digits:]\n                    elif pattern_name == 'container_id':\n                        return full_match[:4] + self.PARTIAL_MASK_CHAR * 7\n                    return full_match\n    \n                sanitized = pattern.sub(mask_match, sanitized)\n            else:\n>               sanitized = pattern.sub(self.REDACTED, sanitized)\nE               AttributeError: 'str' object has no attribute 'sub'\n\nsrc/lib/log_sanitizer.py:82: AttributeError"
-            }
-          ]
-        },
-        {
-          "name": "test_custom_keys",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_custom_keys",
+          "name": "test_add_message_success",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_add_message_success",
           "state": "passed"
         },
         {
-          "name": "test_module_functions",
-          "fullName": "tests/unit/test_log_sanitizer.py::TestLogSanitizer::test_module_functions",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "tests/unit/test_logger.py",
-      "tests": [
-        {
-          "name": "test_format_basic_log",
-          "fullName": "tests/unit/test_logger.py::TestStructuredFormatter::test_format_basic_log",
+          "name": "test_add_message_enforces_max_limit",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_add_message_enforces_max_limit",
           "state": "passed"
         },
         {
-          "name": "test_format_with_correlation_id",
-          "fullName": "tests/unit/test_logger.py::TestStructuredFormatter::test_format_with_correlation_id",
+          "name": "test_add_message_nonexistent_session",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_add_message_nonexistent_session",
           "state": "passed"
         },
         {
-          "name": "test_format_with_extra_fields",
-          "fullName": "tests/unit/test_logger.py::TestStructuredFormatter::test_format_with_extra_fields",
+          "name": "test_get_session_messages_success",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_get_session_messages_success",
           "state": "passed"
         },
         {
-          "name": "test_format_with_exception",
-          "fullName": "tests/unit/test_logger.py::TestStructuredFormatter::test_format_with_exception",
+          "name": "test_get_session_messages_with_limit",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_get_session_messages_with_limit",
           "state": "passed"
         },
         {
-          "name": "test_setup_logger_console",
-          "fullName": "tests/unit/test_logger.py::TestLoggerSetup::test_setup_logger_console",
+          "name": "test_get_session_messages_nonexistent_session",
+          "fullName": "tests/unit/test_session_service.py::TestMessageManagement::test_get_session_messages_nonexistent_session",
           "state": "passed"
         },
         {
-          "name": "test_setup_logger_with_file",
-          "fullName": "tests/unit/test_logger.py::TestLoggerSetup::test_setup_logger_with_file",
-          "state": "failed",
-          "errors": [
-            {
-              "message": "args = (<test_logger.TestLoggerSetup object at 0x10a0f0940>,), keywargs = {}\n\n    @wraps(func)\n    def patched(*args, **keywargs):\n>       with self.decoration_helper(patched,\n                                    args,\n                                    keywargs) as (newargs, newkeywargs):\n\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1334: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py:117: in __enter__\n    return next(self.gen)\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1316: in decoration_helper\n    arg = exit_stack.enter_context(patching)\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py:429: in enter_context\n    result = _cm_type.__enter__(cm)\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1389: in __enter__\n    self.target = self.getter()\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1564: in <lambda>\n    getter = lambda: _importer(target)\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1240: in _importer\n    thing = _dot_lookup(thing, comp, import_path)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nthing = <module 'logging' from '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/logging/__init__.py'>\ncomp = 'handlers', import_path = 'src.lib.logger.logging.handlers'\n\n    def _dot_lookup(thing, comp, import_path):\n        try:\n            return getattr(thing, comp)\n        except AttributeError:\n>           __import__(import_path)\nE           ModuleNotFoundError: No module named 'src.lib.logger.logging'; 'src.lib.logger' is not a package\n\n/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:1229: ModuleNotFoundError"
-            }
-          ]
-        },
-        {
-          "name": "test_get_logger",
-          "fullName": "tests/unit/test_logger.py::TestLoggerSetup::test_get_logger",
+          "name": "test_switch_channel_voice_to_chat",
+          "fullName": "tests/unit/test_session_service.py::TestMultiChannelSupport::test_switch_channel_voice_to_chat",
           "state": "passed"
         },
         {
-          "name": "test_logger_levels",
-          "fullName": "tests/unit/test_logger.py::TestLoggerSetup::test_logger_levels",
+          "name": "test_switch_channel_chat_to_voice",
+          "fullName": "tests/unit/test_session_service.py::TestMultiChannelSupport::test_switch_channel_chat_to_voice",
           "state": "passed"
         },
         {
-          "name": "test_set_and_get_correlation_id",
-          "fullName": "tests/unit/test_logger.py::TestCorrelationId::test_set_and_get_correlation_id",
+          "name": "test_switch_channel_nonexistent_session",
+          "fullName": "tests/unit/test_session_service.py::TestMultiChannelSupport::test_switch_channel_nonexistent_session",
           "state": "passed"
         },
         {
-          "name": "test_clear_correlation_id",
-          "fullName": "tests/unit/test_logger.py::TestCorrelationId::test_clear_correlation_id",
+          "name": "test_switch_channel_different_agent",
+          "fullName": "tests/unit/test_session_service.py::TestMultiChannelSupport::test_switch_channel_different_agent",
           "state": "passed"
         },
         {
-          "name": "test_correlation_id_context_isolation",
-          "fullName": "tests/unit/test_logger.py::TestCorrelationId::test_correlation_id_context_isolation",
+          "name": "test_is_session_expired_active_within_timeout",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_is_session_expired_active_within_timeout",
           "state": "passed"
         },
         {
-          "name": "test_async_handler_emission",
-          "fullName": "tests/unit/test_logger.py::TestAsyncLoggingHandler::test_async_handler_emission",
+          "name": "test_is_session_expired_active_beyond_timeout",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_is_session_expired_active_beyond_timeout",
           "state": "passed"
         },
         {
-          "name": "test_async_handler_error_handling",
-          "fullName": "tests/unit/test_logger.py::TestAsyncLoggingHandler::test_async_handler_error_handling",
+          "name": "test_is_session_expired_with_recent_message",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_is_session_expired_with_recent_message",
+          "state": "passed"
+        },
+        {
+          "name": "test_is_session_expired_non_active_status",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_is_session_expired_non_active_status",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_last_activity_with_messages",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_get_session_last_activity_with_messages",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_last_activity_no_messages",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_get_session_last_activity_no_messages",
+          "state": "passed"
+        },
+        {
+          "name": "test_cleanup_expired_sessions",
+          "fullName": "tests/unit/test_session_service.py::TestSessionTimeout::test_cleanup_expired_sessions",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_stats",
+          "fullName": "tests/unit/test_session_service.py::TestSessionStats::test_get_session_stats",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_stats_empty",
+          "fullName": "tests/unit/test_session_service.py::TestSessionStats::test_get_session_stats_empty",
+          "state": "passed"
+        },
+        {
+          "name": "test_update_context_from_user_message",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_update_context_from_user_message",
+          "state": "passed"
+        },
+        {
+          "name": "test_update_context_from_assistant_message",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_update_context_from_assistant_message",
+          "state": "passed"
+        },
+        {
+          "name": "test_context_preserved_across_channel_switch",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_context_preserved_across_channel_switch",
+          "state": "passed"
+        },
+        {
+          "name": "test_infer_intent_tracking",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_infer_intent_tracking",
+          "state": "passed"
+        },
+        {
+          "name": "test_infer_intent_help",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_infer_intent_help",
+          "state": "passed"
+        },
+        {
+          "name": "test_infer_intent_booking",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_infer_intent_booking",
+          "state": "passed"
+        },
+        {
+          "name": "test_infer_intent_general",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_infer_intent_general",
+          "state": "passed"
+        },
+        {
+          "name": "test_extract_entities_containers",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_extract_entities_containers",
+          "state": "passed"
+        },
+        {
+          "name": "test_extract_entities_bl_numbers",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_extract_entities_bl_numbers",
+          "state": "passed"
+        },
+        {
+          "name": "test_extract_entities_mixed",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_extract_entities_mixed",
+          "state": "passed"
+        },
+        {
+          "name": "test_extract_entities_case_insensitive",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_extract_entities_case_insensitive",
+          "state": "passed"
+        },
+        {
+          "name": "test_active_entities_limited",
+          "fullName": "tests/unit/test_session_service.py::TestContextPreservation::test_active_entities_limited",
+          "state": "passed"
+        },
+        {
+          "name": "test_load_session_from_storage_redis_error",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_load_session_from_storage_redis_error",
+          "state": "passed"
+        },
+        {
+          "name": "test_load_session_from_storage_no_redis",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_load_session_from_storage_no_redis",
+          "state": "passed"
+        },
+        {
+          "name": "test_persist_session_redis_error",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_persist_session_redis_error",
+          "state": "passed"
+        },
+        {
+          "name": "test_persist_session_no_redis",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_persist_session_no_redis",
+          "state": "passed"
+        },
+        {
+          "name": "test_get_session_from_storage_agent_mismatch",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_get_session_from_storage_agent_mismatch",
+          "state": "passed"
+        },
+        {
+          "name": "test_concurrent_session_operations",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_concurrent_session_operations",
+          "state": "passed"
+        },
+        {
+          "name": "test_session_operations_with_invalid_data",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_session_operations_with_invalid_data",
+          "state": "passed"
+        },
+        {
+          "name": "test_cleanup_with_concurrent_access",
+          "fullName": "tests/unit/test_session_service.py::TestErrorHandling::test_cleanup_with_concurrent_access",
+          "state": "passed"
+        },
+        {
+          "name": "test_session_loaded_from_storage_on_miss",
+          "fullName": "tests/unit/test_session_service.py::TestPersistenceIntegration::test_session_loaded_from_storage_on_miss",
+          "state": "passed"
+        },
+        {
+          "name": "test_session_persisted_on_end",
+          "fullName": "tests/unit/test_session_service.py::TestPersistenceIntegration::test_session_persisted_on_end",
+          "state": "passed"
+        },
+        {
+          "name": "test_graceful_degradation_without_redis",
+          "fullName": "tests/unit/test_session_service.py::TestPersistenceIntegration::test_graceful_degradation_without_redis",
           "state": "passed"
         }
       ]

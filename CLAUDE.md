@@ -190,3 +190,31 @@ Current development focus: **Voice Integration** (Phase 3.5)
 - `specs/001-efl-agent-assistant-prototype-track-trace-vo/plan.md` - Technical architecture decisions
 - `AGENTS.md` - AI development guidelines and workflow
 - `CONTRIBUTING.md` - Detailed development process and PR guidelines
+
+## Linear Issue Workflow Support
+
+### When Verifying Linear Issues
+1. Start from `docs/prompts/check_linear_issue_status.md` and adapt the prompt with the issue ID or URL.
+2. Pull the full issue payload from Linear (status, assignee, subtasks, comment history).
+3. Compare described progress with repository changes and test artefacts to confirm completion.
+4. Highlight blockers, dependencies, or missing deliverables discovered in recent updates.
+5. Deliver the summary using the standard report format below and suggest next actions when work remains.
+
+### Standard Report Format
+```
+Issue Status Report:
+- Issue ID: [ID]
+- Title: [Title]
+- Current Status: [Status]
+- Progress: [X/Y tasks completed]
+- Last Updated: [Date]
+- Assignee: [Name]
+- Completion Status: [Addressed/Not Addressed/Partially Addressed]
+- Evidence Collected: [Key files, test results, notes]
+- Next Actions: [List of recommended actions]
+```
+
+### Close-Out Checklist
+- Reference concrete repo evidence (paths, tests) that support the reported status.
+- Update `tasks.md` to reflect verified progress.
+- Post a Linear comment summarising findings and transition the issue to `Done` when warranted.
