@@ -3,8 +3,9 @@
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
-from src.models.container import Container, BillOfLading, ContainerStatus
 from src.models.agent import ChannelType
+from src.models.bill_of_lading import BillOfLading
+from src.models.container import Container, ContainerStatus
 from src.services.track_service import TrackService
 
 

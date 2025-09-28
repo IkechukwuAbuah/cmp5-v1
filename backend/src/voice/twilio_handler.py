@@ -10,7 +10,8 @@ from twilio.twiml.voice_response import VoiceResponse
 from twilio.rest import Client
 
 from src.core.config import settings
-from src.models.agent import ChannelType, AgentSession, Message
+from src.models.agent import ChannelType
+from src.models.agent_session import AgentSession, Message
 from src.services.session_service import SessionService
 from src.services.response_service import ResponseService
 from src.services.track_service import TrackService
@@ -54,7 +55,24 @@ class TwilioVoiceHandler:
             logger.info(f"Incoming call from {from_number} to {to_number}, CallSID: {call_sid}")
 
             # Create or retrieve session for this caller
-            session = await self._get_or_create_session(from_number, call_sid)
+            language_pref = getattr(request.state, "language", None)
+            cultural_pref = getattr(request.state, "cultural_context", None)
+
+            session = await self._get_or_create_session(
+                from_number,
+                call_sid,
+                language_pref,
+                cultural_pref,
+            )
+
+            await self.session_service.update_localisation_preferences(
+                session.id,
+                session.agentId,
+                language=language_pref,
+                cultural_context=cultural_pref,
+            )
+
+            twilio_language = self._twilio_language_for(session.context.preferredLanguage)
 
             # Generate TwiML response
             response = VoiceResponse()
@@ -66,7 +84,7 @@ class TwilioVoiceHandler:
                 method='POST',
                 timeout=10,
                 speech_timeout='auto',
-                language='en-US',
+                language=twilio_language,
                 hints='container, tracking, shipment, bill of lading, status'
             )
 
@@ -76,7 +94,7 @@ class TwilioVoiceHandler:
                 "Please say the container number or bill of lading number you'd like to track, "
                 "or ask for help.",
                 voice='alice',
-                language='en-US'
+                language=twilio_language
             )
 
             # If no input received, redirect back
@@ -100,9 +118,22 @@ class TwilioVoiceHandler:
             logger.info(f"Processing speech input for session {session_id}: {speech_result}")
 
             # Get session
-            session = await self.session_service.get_session(session_id, "voice_user")
+            session = await self.session_service.get_session(session_id, None)
             if not session:
                 return self._generate_error_response("Session not found. Please try again.")
+
+            language_pref = getattr(request.state, "language", None)
+            cultural_pref = getattr(request.state, "cultural_context", None)
+            await self.session_service.update_localisation_preferences(
+                session.id,
+                session.agentId,
+                language=language_pref,
+                cultural_context=cultural_pref,
+            )
+
+            twilio_language = self._twilio_language_for(
+                language_pref or session.context.preferredLanguage
+            )
 
             # Add user message to session
             user_message = Message(
@@ -137,7 +168,7 @@ class TwilioVoiceHandler:
             twiml_response.say(
                 voice_response,
                 voice='alice',
-                language='en-US'
+                language=twilio_language
             )
 
             # Check if we need follow-up
@@ -148,7 +179,7 @@ class TwilioVoiceHandler:
                     method='POST',
                     timeout=10,
                     speech_timeout='auto',
-                    language='en-US'
+                    language=twilio_language
                 ).say("Do you need help with anything else?", voice='alice')
 
             # Hang up
@@ -160,19 +191,59 @@ class TwilioVoiceHandler:
             logger.error(f"Error processing speech input: {e}")
             return self._generate_error_response()
 
-    async def _get_or_create_session(self, phone_number: str, call_sid: str) -> AgentSession:
+    async def _get_or_create_session(
+        self,
+        phone_number: str,
+        call_sid: str,
+        language: Optional[str] = None,
+        cultural_context: Optional[str] = None,
+    ) -> AgentSession:
         """Get existing session or create new one for phone number."""
         # Try to find existing active session for this phone number
         # This is a simplified implementation - in production, you'd want more sophisticated session management
         session_id = f"voice_{call_sid}"
 
-        # For now, create a new session for each call
+        existing_session = await self.session_service.get_session(session_id, phone_number)
+        if existing_session:
+            return existing_session
+
         session = await self.session_service.create_session(phone_number, ChannelType.VOICE)
 
         # Override the session ID to match our call_sid for tracking
+        original_id = session.id
         session.id = session_id
+        # Ensure service cache uses the new identifier
+        if original_id in self.session_service._sessions:
+            self.session_service._sessions.pop(original_id)
+        self.session_service._sessions[session_id] = session
 
+        await self.session_service.update_localisation_preferences(
+            session.id,
+            session.agentId,
+            language=language,
+            cultural_context=cultural_context,
+        )
         return session
+
+    def _twilio_language_for(self, preference: Optional[str]) -> str:
+        """Map ISO language codes to Twilio-supported locales."""
+        lookup = {
+            "en": "en-US",
+            "en-gb": "en-GB",
+            "en-ng": "en-NG",
+            "fr": "fr-FR",
+            "fr-sn": "fr-FR",
+            "pt": "pt-PT",
+            "pt-pt": "pt-PT",
+            "pt-br": "pt-BR",
+            "ar": "ar-SA",
+        }
+
+        if not preference:
+            return "en-US"
+
+        code = preference.lower()
+        return lookup.get(code, lookup.get(code.split('-')[0], "en-US"))
 
     async def _process_voice_query(self, query: str, session: AgentSession) -> str:
         """Process a voice query and return response."""

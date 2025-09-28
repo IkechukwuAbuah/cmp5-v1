@@ -6,8 +6,10 @@ from typing import Dict, List, Optional, Tuple
 from datetime import datetime
 
 from src.core.config import settings
-from src.models.container import Container, BillOfLading, ContainerStatus, TerminalLocation
 from src.models.agent import Agent
+from src.models.bill_of_lading import BillOfLading
+from src.models.container import Container, ContainerStatus
+from src.models.terminal_location import TerminalLocation
 from src.lib.circuit_breaker import CircuitBreakerManager
 from src.lib.graceful_degradation import GracefulDegradationService
 

@@ -5,11 +5,17 @@ and provides localisation services throughout the request lifecycle.
 """
 
 import logging
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Tuple
 from contextlib import contextmanager
 from contextvars import ContextVar
+from time import perf_counter
+
 from fastapi import Request, Response, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
+
+from ..core.config import settings
+from ..localisation.context_detection import CulturalContextDetector
+from ..lib.metrics import MetricsRecorder, LocalisationMetric
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +99,11 @@ class LocalisationMiddleware(BaseHTTPMiddleware):
             "nigerian", "west_african", "formal_business"
         ]
 
+        self.context_detector = CulturalContextDetector(
+            default_context=self.default_cultural_context,
+            supported_contexts=self.supported_cultural_contexts,
+        )
+
         # Import localisation components
         try:
             from ..localisation.en import english_pack
@@ -113,7 +124,54 @@ class LocalisationMiddleware(BaseHTTPMiddleware):
 
         # Detect language and cultural context
         language = self._detect_language(request)
-        cultural_context = self._detect_cultural_context(request)
+        baseline_context, baseline_source, explicit = self._detect_cultural_context_details(request)
+        agent_id = getattr(request.state, "agent_id", None) or request.headers.get("X-Agent-Id")
+        session_id = await self.context_detector.extract_session_identifier(request)
+
+        detection_start = perf_counter()
+        detection_result = await self.context_detector.resolve(
+            request,
+            session_id=session_id,
+            agent_id=agent_id,
+            baseline_context=baseline_context,
+            baseline_source=baseline_source,
+            explicit_source=explicit,
+        )
+        detection_duration_ms = (perf_counter() - detection_start) * 1000
+        request.state.localisation_detection_ms = detection_duration_ms
+
+        MetricsRecorder.record_localisation(
+            LocalisationMetric(
+                latency_ms=detection_duration_ms,
+                source=detection_result.source,
+                persisted=detection_result.persisted,
+                had_session=bool(session_id),
+                had_agent=bool(agent_id),
+            )
+        )
+
+        if (
+            detection_duration_ms > settings.LOCALISATION_LATENCY_TARGET_MS
+        ):
+            logger.warning(
+                "Localisation detection latency %.2fms exceeded target %.2fms",
+                detection_duration_ms,
+                settings.LOCALISATION_LATENCY_TARGET_MS,
+            )
+
+        if (
+            detection_result.source == "default"
+            and (session_id or agent_id)
+        ):
+            logger.warning(
+                "Localisation fell back to default despite identifiers",
+                extra={
+                    "session_id": session_id,
+                    "agent_id": agent_id,
+                },
+            )
+
+        cultural_context = detection_result.context
 
         # Validate detected values
         language = self._validate_language(language)
@@ -125,20 +183,31 @@ class LocalisationMiddleware(BaseHTTPMiddleware):
             request.state.language = language
             request.state.cultural_context = cultural_context
             request.state.localisation_context = ctx
+            request.state.cultural_context_source = detection_result.source
+            request.state.localisation_detection_ms = detection_duration_ms
+            if detection_result.session_id:
+                request.state.localisation_session_id = detection_result.session_id
 
             # Process the request
             try:
                 response = await call_next(request)
 
                 # Add localisation headers to response
-                self._add_localisation_headers(response, language, cultural_context)
+                self._add_localisation_headers(
+                    response,
+                    language,
+                    cultural_context,
+                    detection_result.source,
+                    detection_duration_ms,
+                )
 
                 return response
 
-            except Exception as e:
-                logger.error(f"Error in localisation middleware: {e}")
-                # Return culturally appropriate error response
-                return await self._handle_localisation_error(e, cultural_context)
+            except HTTPException as exc:  # pragma: no cover - managed upstream
+                raise exc
+            except Exception as exc:  # pragma: no cover - managed upstream
+                logger.exception("Unhandled exception in localisation pipeline")
+                raise
 
     def _detect_language(self, request: Request) -> str:
         """Detect the preferred language from the request."""
@@ -167,28 +236,30 @@ class LocalisationMiddleware(BaseHTTPMiddleware):
         return self.default_language
 
     def _detect_cultural_context(self, request: Request) -> str:
-        """Detect the cultural context from the request."""
+        """Backward-compatible cultural context detection used in tests."""
 
-        # 1. Check for explicit cultural context parameter
-        if hasattr(request.query_params, 'get') and request.query_params.get('culture'):
-            return request.query_params.get('culture')
+        context, _, _ = self._detect_cultural_context_details(request)
+        return context or self.default_cultural_context
 
-        # 2. Check user agent or other headers for cultural indicators
+    def _detect_cultural_context_details(self, request: Request) -> Tuple[Optional[str], Optional[str], bool]:
+        """Detect cultural context with source metadata and explicit flag."""
+
+        if hasattr(request.query_params, "get"):
+            culture_param = request.query_params.get("culture")
+            if culture_param:
+                return culture_param, "query_param", True
+
+        header_override = request.headers.get("X-Cultural-Context") or request.headers.get("X-Culture")
+        if header_override:
+            return header_override, "header_override", True
+
         user_agent = request.headers.get('User-Agent', '').lower()
+        if user_agent and any(term in user_agent for term in ['nigeria', 'lagos', 'naija']):
+            return 'nigerian', 'user_agent', False
+        if user_agent and any(term in user_agent for term in ['ghana', 'accra', 'west africa']):
+            return 'west_african', 'user_agent', False
 
-        # Detect mobile apps or specific regional indicators
-        if 'android' in user_agent and any(term in user_agent for term in ['nigeria', 'lagos', 'naija']):
-            return 'nigerian'
-        if 'ios' in user_agent and any(term in user_agent for term in ['nigeria', 'lagos', 'naija']):
-            return 'nigerian'
-
-        # 3. Check for regional headers or geolocation
-        # This could be expanded with GeoIP or other location services
-
-        # 4. Check user session for cultural preferences
-
-        # 5. Default to configured default
-        return self.default_cultural_context
+        return None, None, False
 
     def _validate_language(self, language: str) -> str:
         """Validate and normalize the language code."""
@@ -225,12 +296,24 @@ class LocalisationMiddleware(BaseHTTPMiddleware):
         logger.warning(f"Unsupported cultural context '{cultural_context}', falling back to '{self.default_cultural_context}'")
         return self.default_cultural_context
 
-    def _add_localisation_headers(self, response: Response, language: str, cultural_context: str):
+    def _add_localisation_headers(
+        self,
+        response: Response,
+        language: str,
+        cultural_context: str,
+        source: Optional[str],
+        detection_latency_ms: Optional[float],
+    ) -> None:
         """Add localisation headers to the response."""
+
         response.headers['X-Localisation-Language'] = language
         response.headers['X-Localisation-Cultural-Context'] = cultural_context
         response.headers['X-Localisation-Supported-Languages'] = ','.join(self.supported_languages)
         response.headers['X-Localisation-Supported-Contexts'] = ','.join(self.supported_cultural_contexts)
+        if source:
+            response.headers['X-Localisation-Context-Source'] = source
+        if detection_latency_ms is not None:
+            response.headers['X-Localisation-Latency'] = f"{detection_latency_ms:.2f}"
 
     async def _handle_localisation_error(self, error: Exception, cultural_context: str) -> Response:
         """Handle errors with culturally appropriate responses."""

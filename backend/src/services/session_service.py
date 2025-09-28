@@ -1,13 +1,13 @@
 """SessionService for multi-channel session management."""
 
-import time
 import uuid
-import json
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 
 from src.core.config import settings
-from src.models.agent import Agent, AgentSession, ChannelType, SessionContext, SessionStatus, Message
+from src.models.agent import Agent, ChannelType
+from src.models.agent_session import AgentSession, Message, SessionStatus
+from src.models.session_context import SessionContext
 from src.lib.graceful_degradation import GracefulDegradationService
 from src.storage.redis_session_store import get_redis_session_store
 
@@ -22,6 +22,8 @@ class SessionService:
         self.degradation_service = None
         self.redis_session_store = None
         self._sessions: Dict[str, AgentSession] = {}
+        self._agent_preferences: Dict[str, str] = {}
+        self._agent_language_preferences: Dict[str, str] = {}
 
     async def get_instance(self) -> "SessionService":
         """Get singleton instance with dependencies initialized."""
@@ -44,6 +46,9 @@ class SessionService:
             context=SessionContext(
                 currentIntent=None,
                 activeEntities=[],
+                preferredChannel=channel,
+                preferredLanguage=settings.DEFAULT_LANGUAGE,
+                preferredCulturalContext=settings.DEFAULT_CULTURAL_CONTEXT,
                 lastResponse="",
                 pendingActions=[]
             )
@@ -52,26 +57,157 @@ class SessionService:
         self._sessions[session_id] = session
         return session
 
-    async def get_session(self, session_id: str, agent_id: str) -> Optional[AgentSession]:
-        """Get session by ID if agent has access."""
+    async def get_session(self, session_id: str, agent_id: Optional[str] = None) -> Optional[AgentSession]:
+        """Get session by ID with optional agent ownership validation."""
         session = self._sessions.get(session_id)
 
-        if session and session.agentId == agent_id:
-            # Check if session is expired
+        if session:
+            if agent_id and session.agentId != agent_id:
+                return None
+
             if self._is_session_expired(session):
                 session.status = SessionStatus.EXPIRED
                 return session
+
             return session
 
-        # Try to load from persistent storage
-        return await self._load_session_from_storage(session_id, agent_id)
+        # Try to load from persistent storage when not cached
+        loaded_session = await self._load_session_from_storage(session_id, agent_id)
+        if loaded_session:
+            # Cache loaded session for subsequent access
+            self._sessions[session_id] = loaded_session
+        return loaded_session
 
     async def update_session_context(self, session_id: str, context: SessionContext) -> bool:
-        """Update session context."""
-        if session_id in self._sessions:
-            self._sessions[session_id].context = context
+        """Update session context and persist changes."""
+        session = self._sessions.get(session_id)
+
+        if not session and self.redis_session_store:
+            # Attempt to hydrate from storage when not cached
+            session = await self._load_session_from_storage(session_id, agent_id=None)
+            if session:
+                self._sessions[session_id] = session
+
+        if not session:
+            return False
+
+        session.context = context
+        await self._persist_session(session)
+        return True
+
+    async def get_language_preference(
+        self,
+        session_id: Optional[str],
+        agent_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Return stored language preference for a session or agent."""
+
+        if not session_id:
+            return self._agent_language_preferences.get(agent_id) if agent_id else None
+
+        session = await self.get_session(session_id, agent_id)
+        if session and session.context and session.context.preferredLanguage:
+            return session.context.preferredLanguage
+
+        if agent_id:
+            return self._agent_language_preferences.get(agent_id)
+
+        return None
+
+    async def get_cultural_preference(
+        self,
+        session_id: str,
+        agent_id: Optional[str] = None
+    ) -> Optional[str]:
+        """Return persisted cultural context preference for a session if available."""
+
+        if not session_id:
+            return self._agent_preferences.get(agent_id) if agent_id else None
+
+        session = await self.get_session(session_id, agent_id)
+        if session and session.context and session.context.preferredCulturalContext:
+            return session.context.preferredCulturalContext
+
+        if agent_id:
+            return self._agent_preferences.get(agent_id)
+
+        return None
+
+    async def update_cultural_preference(
+        self,
+        session_id: str,
+        agent_id: Optional[str],
+        preference: str
+    ) -> bool:
+        """Persist cultural context preference for the active session."""
+
+        return await self.update_localisation_preferences(
+            session_id,
+            agent_id,
+            cultural_context=preference,
+        )
+
+    async def update_language_preference(
+        self,
+        session_id: str,
+        agent_id: Optional[str],
+        preference: str,
+    ) -> bool:
+        """Persist language preference for the active session."""
+
+        return await self.update_localisation_preferences(
+            session_id,
+            agent_id,
+            language=preference,
+        )
+
+    async def update_localisation_preferences(
+        self,
+        session_id: Optional[str],
+        agent_id: Optional[str],
+        *,
+        language: Optional[str] = None,
+        cultural_context: Optional[str] = None,
+    ) -> bool:
+        """Persist language and cultural context preferences for the active session."""
+
+        if language:
+            language = language.strip().lower()
+        if cultural_context:
+            cultural_context = cultural_context.strip().lower()
+
+        if not language and not cultural_context:
+            return False
+
+        # Persist against agent profile for continuity across sessions
+        if agent_id:
+            if language:
+                self._agent_language_preferences[agent_id] = language
+            if cultural_context:
+                self._agent_preferences[agent_id] = cultural_context
+
+        if not session_id:
+            return agent_id is not None
+
+        session = await self.get_session(session_id, agent_id)
+        if not session or not session.context:
+            return agent_id is not None
+
+        updated = False
+
+        if language and session.context.preferredLanguage != language:
+            session.context.preferredLanguage = language
+            updated = True
+
+        if cultural_context and session.context.preferredCulturalContext != cultural_context:
+            session.context.preferredCulturalContext = cultural_context
+            updated = True
+
+        if not updated:
             return True
-        return False
+
+        await self.update_session_context(session.id, session.context)
+        return True
 
     async def add_message(self, session_id: str, message: Message) -> bool:
         """Add a message to a session."""
@@ -85,6 +221,7 @@ class SessionService:
 
             # Update context based on message
             await self._update_context_from_message(session, message)
+            await self._persist_session(session)
             return True
         return False
 
@@ -107,6 +244,10 @@ class SessionService:
 
         # Update channel while preserving context
         session.channel = new_channel
+        if session.context:
+            session.context.preferredChannel = new_channel
+            await self.update_session_context(session.id, session.context)
+        await self._persist_session(session)
         return session
 
     async def end_session(self, session_id: str, agent_id: str) -> bool:
@@ -202,7 +343,7 @@ class SessionService:
 
         return entities
 
-    async def _load_session_from_storage(self, session_id: str, agent_id: str) -> Optional[AgentSession]:
+    async def _load_session_from_storage(self, session_id: str, agent_id: Optional[str]) -> Optional[AgentSession]:
         """Load session from persistent storage."""
         if not self.redis_session_store:
             logger.error("Redis session store not initialized")
@@ -211,12 +352,22 @@ class SessionService:
         try:
             session = await self.redis_session_store.load_session(session_id)
 
-            # Verify session belongs to the requesting agent
-            if session and session.agentId == agent_id:
-                logger.debug(f"Loaded session {session_id} from Redis storage")
-                return session
+            if not session:
+                return None
 
-            return None
+            # Verify session belongs to requesting agent when provided
+            if agent_id and session.agentId != agent_id:
+                logger.warning(
+                    "Session %s ownership mismatch: expected %s got %s",
+                    session_id,
+                    agent_id,
+                    session.agentId
+                )
+                return None
+
+            logger.debug(f"Loaded session {session_id} from Redis storage")
+            self._sessions[session_id] = session
+            return session
 
         except Exception as e:
             logger.error(f"Failed to load session {session_id} from storage: {str(e)}")

@@ -97,6 +97,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
             request.state.agent_id = payload.get("sub")
             request.state.agent_role = payload.get("role", "agent")
             request.state.token_payload = payload
+            request.state.cultural_preference = (
+                payload.get("cultural_context") or payload.get("preferred_culture")
+            )
 
         except JWTError as e:
             return JSONResponse(

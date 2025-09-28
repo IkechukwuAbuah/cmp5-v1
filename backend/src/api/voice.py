@@ -69,7 +69,9 @@ async def voice_interaction(
         result = await voice_continuity.handle_voice_interaction(
             phone_number=phone_number,
             audio_input=audio_data,
-            session_id=session_id
+            session_id=session_id,
+            language=getattr(request.state, "language", None),
+            cultural_context=getattr(request.state, "cultural_context", None),
         )
 
         if not result["success"]:
@@ -123,7 +125,9 @@ async def continue_voice_conversation(
         result = await voice_continuity.continue_conversation(
             session_id=session_id,
             audio_input=audio_data,
-            context_override=context_dict
+            context_override=context_dict,
+            language=getattr(request.state, "language", None),
+            cultural_context=getattr(request.state, "cultural_context", None),
         )
 
         if not result["success"]:

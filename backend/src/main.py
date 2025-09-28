@@ -14,8 +14,9 @@ from src.lib.circuit_breaker import CircuitBreakerManager
 from src.lib.logger import setup_logger
 from src.middleware.auth import AuthMiddleware
 from src.middleware.error_handler import ErrorHandlerMiddleware
-from src.middleware.security import SecurityMiddleware
+from src.middleware.localisation import LocalisationMiddleware
 from src.middleware.logging import LoggingMiddleware
+from src.middleware.security import SecurityMiddleware
 
 
 @asynccontextmanager
@@ -71,14 +72,24 @@ def create_application() -> FastAPI:
     if settings.ENABLE_REQUEST_LOGGING:
         app.add_middleware(LoggingMiddleware, log_level=settings.LOG_LEVEL)
 
-    # Authentication middleware
+    # Localisation middleware (enables cultural context + language detection)
+    if settings.ENABLE_LOCALISATION:
+        app.add_middleware(
+            LocalisationMiddleware,
+            default_language=settings.DEFAULT_LANGUAGE,
+            default_cultural_context=settings.DEFAULT_CULTURAL_CONTEXT,
+            supported_languages=settings.SUPPORTED_LANGUAGES,
+            supported_cultural_contexts=settings.SUPPORTED_CULTURAL_CONTEXTS,
+        )
+
+    # Authentication middleware (runs before localisation due to middleware stacking order)
     app.add_middleware(AuthMiddleware)
 
     # Security middleware (temporarily disabled for debugging)
     # app.add_middleware(SecurityMiddleware)
 
-    # Error handler middleware (temporarily disabled for debugging)
-    # app.add_middleware(ErrorHandlerMiddleware)
+    # Error handler middleware captures exceptions and returns cultural responses
+    app.add_middleware(ErrorHandlerMiddleware)
 
     # Rate limiting middleware (temporarily disabled for debugging)
     # app.add_middleware(SlowAPIMiddleware)

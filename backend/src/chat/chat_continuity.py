@@ -8,13 +8,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Deque, Dict, Iterable, List, Optional
 
-from src.models.agent import (
-    AgentSession,
-    SessionContext,
-    Message,
-    ChannelType,
-    EntityReference,
-)
+from src.models.agent import ChannelType
+from src.models.agent_session import AgentSession, Message
+from src.models.session_context import EntityReference, SessionContext
 from src.services.session_service import SessionService
 
 
@@ -84,12 +80,18 @@ class ChatContinuityManager:
             session.id = session_id
 
         context = session.context
+        context.preferredChannel = ChannelType.CHAT
         context.currentIntent = voice_context.get("current_intent")
         voice_entities = voice_context.get("recent_entities", [])
         if voice_entities:
             context.activeEntities.extend(self._normalize_entities(voice_entities))
         context.pendingActions.extend(voice_context.get("pending_clarifications", []))
+        if voice_context.get("language"):
+            context.preferredLanguage = voice_context["language"]
+        if voice_context.get("culturalContext"):
+            context.preferredCulturalContext = voice_context["culturalContext"]
         await self.session_service.update_session_context(session_id, context)
+        session.channel = ChannelType.CHAT
 
         return session
 
@@ -164,4 +166,3 @@ class ChatContinuityManager:
 
 
 __all__ = ["ChatContinuityManager"]
-

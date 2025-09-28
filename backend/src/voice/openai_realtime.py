@@ -11,7 +11,8 @@ import time
 import openai
 from openai import AsyncOpenAI
 from src.core.config import settings
-from src.models.agent import Message, SessionContext
+from src.models.agent_session import Message
+from src.models.session_context import SessionContext
 from src.services.session_service import SessionService
 from src.services.response_service import ResponseService
 from src.services.track_service import TrackService
@@ -135,7 +136,7 @@ class OpenAIRealtimeService:
         """Process audio input and stream text responses."""
         try:
             # Get the agent session
-            session = await self.session_service.get_session(session_id, "voice_user")
+            session = await self.session_service.get_session(session_id, None)
             if not session:
                 yield "Error: Session not found"
                 return
@@ -143,8 +144,12 @@ class OpenAIRealtimeService:
             # Create or get realtime session
             realtime_session_id = await self._get_or_create_realtime_session(session_id, session.agentId)
 
-            # Transcribe audio using Whisper
-            transcription = await self._transcribe_audio(audio_data, mime_type)
+            # Transcribe audio using Whisper with session language preference
+            transcription = await self._transcribe_audio(
+                audio_data,
+                mime_type,
+                session.context.preferredLanguage,
+            )
 
             if not transcription:
                 yield "I didn't catch that. Could you please repeat?"
@@ -221,7 +226,8 @@ class OpenAIRealtimeService:
     async def _transcribe_audio(
         self,
         audio_data: bytes,
-        mime_type: str
+        mime_type: str,
+        language: Optional[str] = None,
     ) -> Optional[str]:
         """Transcribe audio using OpenAI Whisper."""
         try:
@@ -236,7 +242,7 @@ class OpenAIRealtimeService:
             response = await self.client.audio.transcriptions.create(
                 model="whisper-1",
                 file=audio_file,
-                language="en",  # You can specify language for better accuracy
+                language=(language or settings.DEFAULT_LANGUAGE),
                 response_format="text"
             )
 

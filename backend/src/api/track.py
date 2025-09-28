@@ -11,13 +11,17 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 
 from src.core.config import settings
-from src.models.agent import Agent, AgentSession, ChannelType, SessionContext, SessionStatus
+from src.models.agent import Agent, ChannelType
+from src.models.agent_session import AgentSession, Message, SessionStatus
+from src.models.session_context import SessionContext
 from src.models.container import Container, ContainerStatus
 from src.services.track_service import TrackService
 from src.services.response_service import ResponseService
 from src.services.session_service import SessionService
 from src.schemas.error import ErrorResponse
 from src.schemas.track import TrackRequest, TrackResponse
+from src.localisation.cultural_messages import ErrorContext
+from src.lib.error_utils import build_error_detail
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
@@ -28,7 +32,8 @@ limiter = Limiter(key_func=get_remote_address)
 @router.post("/track", response_model=TrackResponse)
 # @limiter.limit("30/minute")  # Temporarily disabled for debugging
 async def track_container(
-    request: TrackRequest,
+    payload: TrackRequest,
+    http_request: Request,
     agent: Agent = Depends(get_current_agent)
 ):
     """Track container or shipment using natural language query."""
@@ -40,7 +45,11 @@ async def track_container(
         if not agent.has_permission("container", "read"):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions to track containers"
+                detail=build_error_detail(
+                    "PERMISSION_DENIED",
+                    ErrorContext.PERMISSION_DENIED,
+                    agent_id=agent.id,
+                ),
             )
 
         # Initialize services
@@ -49,30 +58,45 @@ async def track_container(
         session_service = await SessionService().get_instance()
 
         # Create or update session
-        session = await session_service.create_session(agent.id, request.channel)
-        from src.models.agent import Message
+        session: Optional[AgentSession] = None
+        if payload.sessionId:
+            session = await session_service.get_session(payload.sessionId, agent.id)
+
+        if not session:
+            session = await session_service.create_session(agent.id, payload.channel)
+
+        language_pref = getattr(http_request.state, "language", None)
+        cultural_pref = getattr(http_request.state, "cultural_context", None)
+        await session_service.update_localisation_preferences(
+            session.id,
+            agent.id,
+            language=language_pref,
+            cultural_context=cultural_pref,
+        )
+
+        from src.models.agent_session import Message
         await session_service.add_message(
             session.id,
             Message(
                 id=str(uuid.uuid4()),
                 type="user",
-                content=request.query,
+                content=payload.query,
                 timestamp=datetime.utcnow()
             )
         )
 
         # Process natural language query
-        result = await track_service.process_natural_language_query(request.query, agent)
+        result = await track_service.process_natural_language_query(payload.query, agent)
 
         containers = result.get("containers", [])
         bill_of_ladings = result.get("bill_of_ladings", [])
 
         # Generate natural language response
         response_text = response_service.format_tracking_response(
-            request.query,
+            payload.query,
             containers,
             bill_of_ladings,
-            request.channel
+            payload.channel
         )
 
         # Determine next step
@@ -83,7 +107,7 @@ async def track_container(
         metadata = {
             "processing_time_ms": int((time.time() - start_time) * 1000),
             "agent_id": agent.id,
-            "channel": request.channel,
+            "channel": payload.channel,
             "query_entities": result.get("entities", {})
         }
 
@@ -116,7 +140,12 @@ async def track_container(
         print(f"Track endpoint error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while processing tracking request"
+            detail=build_error_detail(
+                "SYSTEM_UNAVAILABLE",
+                ErrorContext.SYSTEM_UNAVAILABLE,
+                operation="track_container",
+                query=request.query,
+            ),
         )
 
 

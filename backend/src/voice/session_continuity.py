@@ -7,15 +7,15 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 
-from src.models.agent import (
-    AgentSession, SessionContext, Message, ChannelType,
-    SessionStatus, EntityReference
-)
+from src.models.agent import ChannelType
+from src.models.agent_session import AgentSession, Message, SessionStatus
+from src.models.session_context import EntityReference, SessionContext
 from src.services.session_service import SessionService
 from src.services.response_service import ResponseService
 from src.services.track_service import TrackService
 from src.voice.voice_response import VoiceResponseFormatter
 from src.voice.audio_utils import AudioProcessor
+from src.core.config import settings
 
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,8 @@ class VoiceSessionState:
     entities_mentioned: List[EntityReference] = field(default_factory=list)
     pending_clarifications: List[str] = field(default_factory=list)
     context_variables: Dict[str, Any] = field(default_factory=dict)
+    language: str = field(default_factory=lambda: settings.DEFAULT_LANGUAGE)
+    cultural_context: str = field(default_factory=lambda: settings.DEFAULT_CULTURAL_CONTEXT)
 
     def update_activity(self):
         """Update last activity timestamp."""
@@ -52,7 +54,9 @@ class VoiceSessionState:
             "recent_entities": self.entities_mentioned[-3:],  # Last 3 entities
             "conversation_turns": self.conversation_turns,
             "pending_clarifications": self.pending_clarifications,
-            "context_variables": self.context_variables
+            "context_variables": self.context_variables,
+            "language": self.language,
+            "culturalContext": self.cultural_context,
         }
 
 
@@ -86,18 +90,53 @@ class VoiceContinuityManager:
         self,
         phone_number: str,
         audio_input: bytes,
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
+        *,
+        language: Optional[str] = None,
+        cultural_context: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Handle a voice interaction with session continuity."""
         try:
             # Get or create session state
             voice_state = await self._get_or_create_voice_state(phone_number, session_id)
 
+            if language:
+                voice_state.language = language
+            if cultural_context:
+                voice_state.cultural_context = cultural_context
+
             # Process audio input
             processed_audio = self.audio_processor.optimize_for_voice_processing(audio_input)
 
             # Get or create agent session
             agent_session = await self._ensure_agent_session(voice_state)
+
+            effective_language = (
+                language
+                or agent_session.context.preferredLanguage
+                or voice_state.language
+                or settings.DEFAULT_LANGUAGE
+            )
+            effective_culture = (
+                cultural_context
+                or agent_session.context.preferredCulturalContext
+                or voice_state.cultural_context
+                or settings.DEFAULT_CULTURAL_CONTEXT
+            )
+
+            voice_state.language = effective_language
+            voice_state.cultural_context = effective_culture
+
+            await self.session_service.update_localisation_preferences(
+                agent_session.id,
+                voice_state.agent_id,
+                language=effective_language,
+                cultural_context=effective_culture,
+            )
+
+            agent_session.context.preferredLanguage = effective_language
+            agent_session.context.preferredCulturalContext = effective_culture
+            await self.session_service.update_session_context(agent_session.id, agent_session.context)
 
             # Update activity
             voice_state.update_activity()
@@ -132,7 +171,9 @@ class VoiceContinuityManager:
                 "metadata": {
                     "intent_detected": intent_info['intent'],
                     "entities_found": len(intent_info['entities']),
-                    "conversation_turns": voice_state.conversation_turns
+                    "conversation_turns": voice_state.conversation_turns,
+                    "language": voice_state.language,
+                    "culturalContext": voice_state.cultural_context,
                 }
             }
 
@@ -149,7 +190,10 @@ class VoiceContinuityManager:
         self,
         session_id: str,
         audio_input: bytes,
-        context_override: Optional[Dict] = None
+        context_override: Optional[Dict] = None,
+        *,
+        language: Optional[str] = None,
+        cultural_context: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Continue an existing conversation with context."""
         try:
@@ -170,9 +214,18 @@ class VoiceContinuityManager:
                     elif key == "context_variables":
                         voice_state.context_variables.update(value)
 
+            if language:
+                voice_state.language = language
+            if cultural_context:
+                voice_state.cultural_context = cultural_context
+
             # Process the continuation
             return await self.handle_voice_interaction(
-                voice_state.phone_number, audio_input, session_id
+                voice_state.phone_number,
+                audio_input,
+                session_id,
+                language=voice_state.language,
+                cultural_context=voice_state.cultural_context,
             )
 
         except Exception as e:
@@ -183,6 +236,73 @@ class VoiceContinuityManager:
                 "response_text": "I encountered an error continuing our conversation. Please try again.",
                 "audio_response": None
             }
+
+    async def sync_from_chat(
+        self,
+        session_id: str,
+        agent_id: str,
+        chat_context: SessionContext,
+        context_override: Optional[Dict[str, Any]] = None,
+    ) -> VoiceSessionState:
+        """Hydrate or create voice state using chat context before switching channels."""
+        override = context_override or {}
+        phone_number = override.get("phone_number") or "unknown"
+
+        voice_state = await self._get_or_create_voice_state(phone_number, session_id)
+        voice_state.agent_id = agent_id or voice_state.agent_id
+
+        # Sync intent and entities
+        if chat_context.currentIntent:
+            voice_state.current_intent = chat_context.currentIntent
+
+        if chat_context.activeEntities:
+            voice_state.entities_mentioned = list(chat_context.activeEntities[-10:])
+
+        # Merge pending actions and context variables
+        voice_state.pending_clarifications = list(chat_context.pendingActions or [])[-5:]
+        voice_state.context_variables.update({
+            "last_chat_response": chat_context.lastResponse,
+        })
+
+        extra_context = override.get("context_variables")
+        if isinstance(extra_context, dict):
+            voice_state.context_variables.update(extra_context)
+
+        if override.get("current_intent"):
+            voice_state.current_intent = override["current_intent"]
+
+        if chat_context.preferredLanguage:
+            voice_state.language = chat_context.preferredLanguage
+        if chat_context.preferredCulturalContext:
+            voice_state.cultural_context = chat_context.preferredCulturalContext
+
+        override_language = override.get("language")
+        override_culture = override.get("cultural_context") or override.get("culturalContext")
+        if override_language:
+            voice_state.language = override_language
+        if override_culture:
+            voice_state.cultural_context = override_culture
+
+        voice_state.update_activity()
+
+        agent_session = await self._ensure_agent_session(voice_state)
+        agent_session.channel = ChannelType.VOICE
+        agent_session.context.preferredChannel = ChannelType.VOICE
+        agent_session.context.currentIntent = voice_state.current_intent
+        agent_session.context.activeEntities = list(chat_context.activeEntities or [])
+        agent_session.context.pendingActions = list(chat_context.pendingActions or [])
+        agent_session.context.lastResponse = chat_context.lastResponse
+        agent_session.context.preferredLanguage = voice_state.language
+        agent_session.context.preferredCulturalContext = voice_state.cultural_context
+        await self.session_service.update_session_context(agent_session.id, agent_session.context)
+        await self.session_service.update_localisation_preferences(
+            agent_session.id,
+            voice_state.agent_id,
+            language=voice_state.language,
+            cultural_context=voice_state.cultural_context,
+        )
+
+        return voice_state
 
     async def get_session_context(self, session_id: str) -> Optional[Dict[str, Any]]:
         """Get context for a voice session."""
@@ -224,7 +344,7 @@ class VoiceContinuityManager:
         voice_state = VoiceSessionState(
             session_id=session_id,
             phone_number=phone_number,
-            agent_id="voice_user"  # Default agent ID for voice users
+            agent_id=phone_number or "voice_user",  # Tie session to caller when available
         )
 
         self.active_voice_sessions[session_id] = voice_state

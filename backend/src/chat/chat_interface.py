@@ -6,7 +6,8 @@ import uuid
 from datetime import datetime
 from typing import Dict, Optional, Any, List
 
-from src.models.agent import ChannelType, Message, Agent
+from src.models.agent import Agent, ChannelType
+from src.models.agent_session import Message
 from src.services.session_service import SessionService
 from src.services.track_service import TrackService
 from src.services.response_service import ResponseService
@@ -187,4 +188,3 @@ class ChatInterfaceService:
 
 
 __all__ = ["ChatInterfaceService"]
-

@@ -78,3 +78,6 @@ addopts = [
     "--cov-report=xml",
     "--cov-fail-under=80"
 ]
+markers = [
+    "performance: Performance validation ensuring latency stays within service-level targets"
+]

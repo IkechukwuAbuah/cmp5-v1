@@ -12,6 +12,8 @@ from src.core.config import settings
 from src.models.agent import Agent
 from src.models.container import Container, ContainerResponse
 from src.schemas.error import ErrorResponse
+from src.localisation.cultural_messages import ErrorContext
+from src.lib.error_utils import build_error_detail
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
@@ -32,7 +34,12 @@ async def get_container(
         if not agent.can_access_container(containerId):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions to access this container"
+                detail=build_error_detail(
+                    "PERMISSION_DENIED",
+                    ErrorContext.PERMISSION_DENIED,
+                    container_id=containerId,
+                    agent_id=agent.id,
+                ),
             )
 
         # Query container data (mock implementation)
@@ -41,7 +48,11 @@ async def get_container(
         if not container:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Container with ID {containerId} not found"
+                detail=build_error_detail(
+                    "CONTAINER_NOT_FOUND",
+                    ErrorContext.CONTAINER_NOT_FOUND,
+                    container_id=containerId,
+                ),
             )
 
         return container
@@ -53,7 +64,12 @@ async def get_container(
         print(f"Get container error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while retrieving container"
+            detail=build_error_detail(
+                "SYSTEM_UNAVAILABLE",
+                ErrorContext.SYSTEM_UNAVAILABLE,
+                operation="get_container",
+                container_id=containerId,
+            ),
         )
 
 
@@ -72,7 +88,12 @@ async def get_container_milestones(
         if not agent.can_access_container(containerId):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions to access this container"
+                detail=build_error_detail(
+                    "PERMISSION_DENIED",
+                    ErrorContext.PERMISSION_DENIED,
+                    container_id=containerId,
+                    agent_id=agent.id,
+                ),
             )
 
         # Query milestone data (mock implementation)
@@ -92,7 +113,12 @@ async def get_container_milestones(
         print(f"Get container milestones error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while retrieving container milestones"
+            detail=build_error_detail(
+                "SYSTEM_UNAVAILABLE",
+                ErrorContext.SYSTEM_UNAVAILABLE,
+                operation="get_container_milestones",
+                container_id=containerId,
+            ),
         )
 
 
@@ -108,7 +134,7 @@ async def _get_container_from_external_apis(container_id: str, agent: Agent) -> 
     return Container(
         id=container_id,
         containerNumber=container_id,
-        isoCode="45G1",
+        isoCode="AB12",
         status="at_terminal",
         location={
             "id": "loc_1",

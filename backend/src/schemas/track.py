@@ -4,8 +4,9 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
-from src.models.container import Container, BillOfLading
 from src.models.agent import ChannelType
+from src.models.bill_of_lading import BillOfLading
+from src.models.container import Container
 
 
 class TrackRequest(BaseModel):

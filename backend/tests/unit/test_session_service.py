@@ -15,6 +15,7 @@ from src.models.agent import (
 from src.models.agent_session import AgentSession, Message, SessionStatus
 from src.models.session_context import EntityReference, SessionContext
 from src.services.session_service import SessionService
+from src.core.config import settings
 
 
 def _make_permission(resource: str) -> Permission:
@@ -82,6 +83,9 @@ def session_service():
     # Mock dependencies to avoid initialization overhead
     service.degradation_service = AsyncMock()
     service.redis_session_store = AsyncMock()
+    service.redis_session_store.save_session = AsyncMock(return_value=True)
+    service.redis_session_store.load_session = AsyncMock(return_value=None)
+    service.redis_session_store.delete_session = AsyncMock(return_value=True)
     return service
 
 
@@ -154,6 +158,8 @@ class TestSessionCRUDOperations:
         assert len(session.conversationHistory) == 0
         assert session.context.currentIntent is None
         assert len(session.context.activeEntities) == 0
+        assert session.context.preferredLanguage == settings.DEFAULT_LANGUAGE
+        assert session.context.preferredCulturalContext == settings.DEFAULT_CULTURAL_CONTEXT
 
         # Verify session is stored in memory
         assert session.id in session_service._sessions
@@ -170,6 +176,8 @@ class TestSessionCRUDOperations:
         assert session.channel == channel
         assert session.status == SessionStatus.ACTIVE
         assert session.id in session_service._sessions
+        assert session.context.preferredLanguage == settings.DEFAULT_LANGUAGE
+        assert session.context.preferredCulturalContext == settings.DEFAULT_CULTURAL_CONTEXT
 
     @pytest.mark.asyncio
     async def test_get_session_success(self, session_service):
@@ -244,6 +252,51 @@ class TestSessionCRUDOperations:
         new_context = _make_session_context()
 
         result = await session_service.update_session_context("nonexistent", new_context)
+
+        assert result is False
+
+
+class TestSessionPreferences:
+    """Test persistence of localisation preferences."""
+
+    @pytest.mark.asyncio
+    async def test_update_localisation_preferences_with_session(self, session_service):
+        session = await session_service.create_session("agent_123", ChannelType.CHAT)
+
+        result = await session_service.update_localisation_preferences(
+            session.id,
+            "agent_123",
+            language="fr",
+            cultural_context="west_african",
+        )
+
+        assert result is True
+        assert session.context.preferredLanguage == "fr"
+        assert session.context.preferredCulturalContext == "west_african"
+
+        language = await session_service.get_language_preference(session.id, "agent_123")
+        culture = await session_service.get_cultural_preference(session.id, "agent_123")
+
+        assert language == "fr"
+        assert culture == "west_african"
+
+    @pytest.mark.asyncio
+    async def test_update_localisation_preferences_agent_only(self, session_service):
+        result = await session_service.update_localisation_preferences(
+            None,
+            "agent_123",
+            language="pt",
+            cultural_context="formal_business",
+        )
+
+        assert result is True
+        assert await session_service.get_language_preference(None, "agent_123") == "pt"
+        assert await session_service.get_cultural_preference(None, "agent_123") == "formal_business"
+
+    @pytest.mark.asyncio
+    async def test_update_localisation_preferences_no_values(self, session_service):
+        session = await session_service.create_session("agent_123", ChannelType.CHAT)
+        result = await session_service.update_localisation_preferences(session.id, "agent_123")
 
         assert result is False
 

@@ -5,8 +5,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from src.models.container import Container, BillOfLading
 from src.models.agent import ChannelType
+from src.models.bill_of_lading import BillOfLading
+from src.models.container import Container
 from src.services.response_service import ResponseService
 
 
@@ -118,4 +119,3 @@ class ChatResponseFormatter:
 
 
 __all__ = ["ChatResponseFormatter"]
-

@@ -247,10 +247,12 @@ class TestLocalisationMiddleware:
         response = Mock(spec=Response)
         response.headers = {}
 
-        middleware._add_localisation_headers(response, "en", "nigerian")
+        middleware._add_localisation_headers(response, "en", "nigerian", "session", 12.3)
 
         assert response.headers["X-Localisation-Language"] == "en"
         assert response.headers["X-Localisation-Cultural-Context"] == "nigerian"
+        assert response.headers["X-Localisation-Context-Source"] == "session"
+        assert float(response.headers["X-Localisation-Latency"]) == 12.3
 
     @pytest.mark.asyncio
     async def test_middleware_error_handling(self):

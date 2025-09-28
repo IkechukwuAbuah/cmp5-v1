@@ -71,6 +71,8 @@ class Settings(BaseSettings):
     MAX_VOICE_RESPONSE_TIME_MS: int = 20000  # 20 seconds
     MAX_CONCURRENT_USERS: int = 100
     MAX_CONTAINERS_PER_DAY: int = 10000
+    LOCALISATION_LATENCY_TARGET_MS: int = 50
+    LOCALISATION_ACCURACY_THRESHOLD: float = 0.9
 
     # Session Management
     SESSION_TIMEOUT_MINUTES: int = 30
@@ -87,6 +89,14 @@ class Settings(BaseSettings):
     ENABLE_VOICE: bool = True
     ENABLE_CHAT: bool = True
     ENABLE_LOCALISATION: bool = True
+    DEFAULT_LANGUAGE: str = "en"
+    DEFAULT_CULTURAL_CONTEXT: str = "nigerian"
+    SUPPORTED_LANGUAGES: List[str] = ["en", "fr", "pt", "ar"]
+    SUPPORTED_CULTURAL_CONTEXTS: List[str] = [
+        "nigerian",
+        "west_african",
+        "formal_business",
+    ]
     ENABLE_CIRCUIT_BREAKER: bool = True
     ENABLE_RATE_LIMITING: bool = True
 

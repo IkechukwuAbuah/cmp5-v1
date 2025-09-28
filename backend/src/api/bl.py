@@ -10,8 +10,11 @@ from slowapi.util import get_remote_address
 
 from src.core.config import settings
 from src.models.agent import Agent
-from src.models.container import BillOfLading, BillOfLadingResponse
+from src.models.bill_of_lading import BillOfLading
+from src.models.container import BillOfLadingResponse
 from src.schemas.error import ErrorResponse
+from src.localisation.cultural_messages import ErrorContext
+from src.lib.error_utils import build_error_detail
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
@@ -32,7 +35,12 @@ async def get_bill_of_lading(
         if not agent.can_access_bl(blNumber):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions to access this bill of lading"
+                detail=build_error_detail(
+                    "PERMISSION_DENIED",
+                    ErrorContext.PERMISSION_DENIED,
+                    bl_number=blNumber,
+                    agent_id=agent.id,
+                ),
             )
 
         # Query BL data (mock implementation)
@@ -41,7 +49,11 @@ async def get_bill_of_lading(
         if not bl:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Bill of Lading with number {blNumber} not found"
+                detail=build_error_detail(
+                    "BL_NOT_FOUND",
+                    ErrorContext.BL_NOT_FOUND,
+                    bl_number=blNumber,
+                ),
             )
 
         return bl
@@ -53,7 +65,12 @@ async def get_bill_of_lading(
         print(f"Get BL error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error while retrieving bill of lading"
+            detail=build_error_detail(
+                "SYSTEM_UNAVAILABLE",
+                ErrorContext.SYSTEM_UNAVAILABLE,
+                operation="get_bill_of_lading",
+                bl_number=blNumber,
+            ),
         )
 
 

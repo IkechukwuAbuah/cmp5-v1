@@ -9,7 +9,8 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 
 from src.core.config import settings
-from src.models.agent import Agent, Message
+from src.models.agent import Agent
+from src.models.agent_session import Message
 from src.schemas.error import ErrorResponse
 from src.schemas.session import SessionMessagesResponse
 

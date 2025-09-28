@@ -8,7 +8,8 @@ import redis.asyncio as redis
 from redis.asyncio.connection import ConnectionPool
 
 from src.core.config import settings
-from src.models.agent import AgentSession, SessionStatus, ChannelType
+from src.models.agent import ChannelType
+from src.models.agent_session import AgentSession, SessionStatus
 
 import logging
 logger = logging.getLogger(__name__)
