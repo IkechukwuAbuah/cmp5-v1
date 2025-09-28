@@ -7,16 +7,13 @@ from typing import List
 
 from src.models.agent import (
     Agent,
-    AgentSession,
-    ChannelType,
-    SessionContext,
-    SessionStatus,
-    Message,
     AgentType,
+    ChannelType,
     ContactInfo,
     Permission,
-    EntityReference
 )
+from src.models.agent_session import AgentSession, Message, SessionStatus
+from src.models.session_context import EntityReference, SessionContext
 from src.services.session_service import SessionService
 
 

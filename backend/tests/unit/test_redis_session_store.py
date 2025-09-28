@@ -4,7 +4,9 @@ import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, AsyncMock
 
-from src.models.agent import AgentSession, SessionStatus, ChannelType, SessionContext, Message
+from src.models.agent import ChannelType
+from src.models.agent_session import AgentSession, Message, SessionStatus
+from src.models.session_context import SessionContext
 from src.storage.redis_session_store import RedisSessionStore
 
 

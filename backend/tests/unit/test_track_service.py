@@ -7,15 +7,10 @@ from unittest.mock import AsyncMock
 import pytest
 
 from src.models.agent import Agent, AgentType, ContactInfo, Permission
-from src.models.container import (
-    BillOfLading,
-    Container,
-    ContainerStatus,
-    TerminalLocation,
-    VesselVoyage,
-    VoyageStatus,
-    LocationType,
-)
+from src.models.bill_of_lading import BillOfLading
+from src.models.container import Container, ContainerStatus
+from src.models.terminal_location import LocationType, TerminalLocation
+from src.models.vessel_voyage import VesselVoyage, VoyageStatus
 from src.services.track_service import TrackService
 
 
