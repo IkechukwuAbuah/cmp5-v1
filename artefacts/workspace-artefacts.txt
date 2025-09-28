@@ -1,0 +1,19 @@
+# Workspace Artefacts Snapshot
+
+- .claude.json
+- .claude.json.backup
+- .claude/plugins/
+- .claude/statsig/
+- .claude/tdd-guard/
+- .claude/todos/
+- .cursor/extensions/
+- .cursor/rules/background-agents-on-tasks.mdc
+- .cursor/skip-cursor-agent-download
+- .mcp-auth/
+- .npm/
+- Library/
+- backend/test_environment.py
+- memory crumbs/MEMORY_CRUMB_2025-09-27_multi_channel_routing.md
+- specs/001-efl-agent-assistant-prototype-track-trace-vo/tasks-new.md
+
+Recorded on $(date -u +"%Y-%m-%dT%H:%M:%SZ").
