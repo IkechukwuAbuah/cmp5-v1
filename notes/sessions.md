@@ -1,3 +1,24 @@
+## 2025-09-27 15:08 WAT
+
+- Fork commit: 47681752a367c72ff4fc6f959b2414e70642edb5 (dirty workspace)
+- Upstream commit: 47681752a367c72ff4fc6f959b2414e70642edb5
+- Focus: Complete Phase 3.7: Polish tasks (T063-T072)
+- Notes: Context update - Localisation phase completed, moving to polish phase. 75/81 tasks done (92.59%).
+
+## 2025-09-27 13:57 WAT
+
+- Fork commit: 47681752a367c72ff4fc6f959b2414e70642edb5 (dirty workspace)
+- Upstream commit: 47681752a367c72ff4fc6f959b2414e70642edb5
+- Focus: Complete Phase 3.7: Polish tasks (T063-T072)
+- Notes: Context update - Localisation phase completed, moving to polish phase. 74/80 tasks done (92.50%).
+
+## 2025-09-27 12:55 WAT
+
+- Fork commit: 47681752a367c72ff4fc6f959b2414e70642edb5 (dirty workspace)
+- Upstream commit: 47681752a367c72ff4fc6f959b2414e70642edb5
+- Focus: Complete Phase 3.7: Polish tasks (T063-T072)
+- Notes: Context update - Localisation phase completed, moving to polish phase. 74/81 tasks done (91.35%).
+
 # Sessions Log - CMP5 v1 EFL Agent Assistant
 
 ## 2025-09-26 20:44 WAT
@@ -70,3 +91,10 @@
 **Related Files**:
 - List of files modified or referenced
 - Test files, documentation, etc.
+
+## 2025-09-27 14:15 WAT
+
+- Focus: T052.4 multi-channel routing service integration
+- Summary: Added channel preference tracking, context-aware voice↔chat handoffs via `ChannelRouterService`, exposed session channel switch API, and captured unit coverage for the router. Left global 80% coverage gate untouched so broader gaps stay visible while targeted tests pass.
+- Tests: `PYTHONPATH=backend python3 -m pytest backend/tests/unit/test_channel_router.py`
+- Next: Expand broader test suite to close remaining coverage gap when ready.
